@@ -1,0 +1,55 @@
+/*
+ * Base structure
+ */
+html, body, #container {
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  /* height of .navbar, customize with @navbar-height variable */
+  padding-top: 50px;
+}
+
+.navbar {
+  min-height: 50px;
+}
+
+/*
+ * Sidebar
+ */
+ 
+#sidebar {
+  float: left;
+  height: 100%;
+  max-width: 100%;
+  width: 200px;
+}
+
+.sidebar-wrapper {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+#sidebar {
+    display: none;
+    z-index: 1000;
+    padding: 20px;
+    overflow-x: hidden;
+    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+    background-color: #f5f5f5;
+    border-right: 1px solid #eee;
+  }
+}
+
+/*
+ * Map
+ */
+#map {
+  height: 100%;
+  width: auto;
+}
