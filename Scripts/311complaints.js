@@ -57,9 +57,9 @@ var marker_colors = ['#7f3b08',
 //---- 311 Query Request
 
 // Builds the query URL based on a date range
+// BUGFIX: URL encoding 
 function buildQuery(startDate, endDate)
 {
-
 	/*http://data.cityofnewyork.us/resource/erm2-nwe9.json?$where=(latitude%20IS%20NOT%20NULL)%
 	20AND%20(complaint_type%20like%20%27\%Noise\%%27)%20AND%20(created_date%3E=%272013-08-01%27)%
 	20AND%20(created_date%3C=%272013-08-08%27)&$group=complaint_type,descriptor,latitude,longitude&$
@@ -70,19 +70,19 @@ function buildQuery(startDate, endDate)
 	var c_type = 'Noise'; 		   							       // Complaint Type
 
 	// Build the data URL
-	URL = "http://data.cityofnewyork.us/resource/erm2-nwe9.json"; // API Access Endpoint
-	URL += "?"; 												  // A query parameter name is preceded by the question mark
-	URL += "$where="; 											  // Filters to be applied
-	URL += "(latitude IS NOT NULL)"; 							  // Only return records with coordinates
-	URL += " AND ";
-	URL += "(complaint_type like '\\%" + c_type + "\\%')";
-	URL += " AND ";
-	URL += "(created_date>='" + start_date + "') AND (created_date<='" + end_date + "')"; // Date range
-	URL += "&$group=complaint_type,descriptor,latitude,longitude"; 						  // Fields to group by
-	URL += "&$select=descriptor,latitude,longitude,complaint_type"; 					  // Fields to return
-	URL = encodeURI(URL);								// Encode special characters such as spaces and quotes
- 	URL = URL.replace("'%5C%25", "%27\\%");			    // Only way that seems to work in Safari
- 	URL = URL.replace("%5C%25'", "\\%%27");
+    URL = "http://data.cityofnewyork.us/resource/fhrw-4uyv.json"; // API Access Endpoint
+    URL += "?";                                                   // A query parameter name is preceded by the question mark
+    URL += "$where=";                                             // Filters to be applied
+    URL += "(latitude IS NOT NULL)";                              // Only return records with coordinates
+    URL += " AND ";
+    URL += "(complaint_type like '%" + c_type + "%')";
+    URL += " AND ";
+    URL += "(created_date>='" + start_date + "') AND (created_date<='" + end_date + "')"; // Date range
+    URL += "&$group=complaint_type,descriptor,latitude,longitude";                        // Fields to group by
+    URL += "&$select=descriptor,latitude,longitude,complaint_type";                       // Fields to return
+
+    URL = encodeURI(URL); 
+	console.log(URL);
 }
 
 // Formats the date into the appropriated input for the query
@@ -123,7 +123,7 @@ function load311ComplaintsIntoMap(map)
 		
 		$.each(data, function(index, rec)
 		{
-			if ( rec.complaint_type.indexOf("Noise") > -1 && rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
+			if ( rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
 			{
 				var marker;
 				for (var i = 0; i < noise_description.length; i++) 
