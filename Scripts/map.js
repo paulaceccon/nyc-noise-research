@@ -30,7 +30,7 @@ function createMap()
 // Loads GeoJSON from an external file
 function loadNeighborhoods()
 {
-	$.getJSON("Resources/community-districts-polygon.geojson", function(data)
+	$.getJSON("https://nycdatastables.s3.amazonaws.com/2013-08-19T18:22:23.125Z/community-districts-polygon.geojson", function(data)
 	{
 		// Add GeoJSON layer to the map once the file is loaded
 		geojson = L.geoJson(data,  
