@@ -59,8 +59,14 @@ var marker_colors = ['#7f3b08',
 // Builds the query URL based on a date range
 function buildQuery(startDate, endDate)
 {
-	var start_date = formattedDate(startDate);  //YYYY-MM-DD
-	var end_date = formattedDate(endDate);      //YYYY-MM-DD
+
+	/*http://data.cityofnewyork.us/resource/erm2-nwe9.json?$where=(latitude%20IS%20NOT%20NULL)%
+	20AND%20(complaint_type%20like%20%27\%Noise\%%27)%20AND%20(created_date%3E=%272013-08-01%27)%
+	20AND%20(created_date%3C=%272013-08-08%27)&$group=complaint_type,descriptor,latitude,longitude&$
+	select=descriptor,latitude,longitude,complaint_type*/
+	
+	var start_date = formattedDate(startDate)+"T00:00:00";  //YYYY-MM-DD
+	var end_date = formattedDate(endDate)+"T23:59:59";      //YYYY-MM-DD
 	var c_type = 'Noise'; 		   							       // Complaint Type
 
 	// Build the data URL
@@ -69,13 +75,14 @@ function buildQuery(startDate, endDate)
 	URL += "$where="; 											  // Filters to be applied
 	URL += "(latitude IS NOT NULL)"; 							  // Only return records with coordinates
 	URL += " AND ";
-	URL += "(complaint_type='" + c_type + "')"; 		  		   // Desired complaint
-// 	URL += "(complaint_type LIKE '" + c_type + "')"; 		  		   // Desired complaint
+	URL += "(complaint_type like '\\%" + c_type + "\\%')";
 	URL += " AND ";
 	URL += "(created_date>='" + start_date + "') AND (created_date<='" + end_date + "')"; // Date range
 	URL += "&$group=complaint_type,descriptor,latitude,longitude"; 						  // Fields to group by
 	URL += "&$select=descriptor,latitude,longitude,complaint_type"; 					  // Fields to return
-	URL = encodeURI(URL); 																  // Encode special characters such as spaces and quotes
+	URL = encodeURI(URL);								// Encode special characters such as spaces and quotes
+ 	URL = URL.replace("'%5C%25", "%27\\%");			    // Only way that seems to work in Safari
+ 	URL = URL.replace("%5C%25'", "\\%%27");
 }
 
 // Formats the date into the appropriated input for the query
@@ -116,21 +123,24 @@ function load311ComplaintsIntoMap(map)
 		
 		$.each(data, function(index, rec)
 		{
-			var marker;
-			for (var i = 0; i < noise_description.length; i++) 
+			if ( rec.complaint_type.indexOf("Noise") > -1 && rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
 			{
-				if (rec.descriptor.indexOf(noise_description[i]) > -1) 
+				var marker;
+				for (var i = 0; i < noise_description.length; i++) 
 				{
-					marker = L.circleMarker([rec.latitude, rec.longitude], marker_style(i));
-					markers[i].push(marker); 
-					all_markers.push(marker); 
-					break;
-				}
-				if (i == noise_description.length-1) 
-				{
-					marker = L.circleMarker([rec.latitude, rec.longitude], marker_style(i));
-					markers[i].push(marker); 
-					all_markers.push(marker); 
+					if (rec.descriptor.indexOf(noise_description[i]) > -1) 
+					{
+						marker = L.circleMarker([rec.latitude, rec.longitude], marker_style(i));
+						markers[i].push(marker); 
+						all_markers.push(marker); 
+						break;
+					}
+					if (i == noise_description.length-1) 
+					{
+						marker = L.circleMarker([rec.latitude, rec.longitude], marker_style(i));
+						markers[i].push(marker); 
+						all_markers.push(marker); 
+					}
 				}
 			}
 
