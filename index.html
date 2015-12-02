@@ -74,6 +74,7 @@
 				</div>
 			  </div>
 			  <div id="map"></div>
+			  <div class="chart"></div>
 			</div>
 
       		<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
@@ -92,6 +93,7 @@
             <script src="Scripts/map.js"></script>
             <script src="Scripts/311complaints.js"></script>            
             <script src="Scripts/datepicker.js"></script>
+            <script src="Scripts/streamgraph.js"></script>
 			<!-- ################ --> 
         </body>
     	<script type="text/javascript">
@@ -105,5 +107,7 @@
       				load311ComplaintsIntoMap(map);
     			});
 			});
+			
+			chart("data.csv", "orange");
 		</script>
 </html>
