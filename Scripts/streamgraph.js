@@ -17,10 +17,13 @@ function chart(csvpath, color) {
 
 	var format = d3.time.format("%m/%d/%y");
 
+	var mapPlotHeight = parseInt(d3.select("#map").style("height"));
+	var mapPlotHeight = parseInt(d3.select("#map").style("height"));
+	var sidebarWidth = parseInt(d3.select("#sidebar").style("width"));
 	var streamPlotMargin = {top: 20, right: 30, bottom: 30, left: 30};
-	var streamPlotWidth = screen.width - streamPlotMargin.left - streamPlotMargin.right;
-	var streamPlotHeight = 300 - streamPlotMargin.top - streamPlotMargin.bottom;
-	var mapPlotHeight = d3.select("#map").style("height");
+	var streamPlotWidth = document.body.clientWidth - streamPlotMargin.left - streamPlotMargin.right - sidebarWidth;
+	var streamPlotHeight = 200 - streamPlotMargin.top - streamPlotMargin.bottom;
+	
 
 	console.log(mapPlotHeight);
 	console.log(streamPlotWidth);
@@ -30,8 +33,8 @@ function chart(csvpath, color) {
 		.style("position", "absolute")
 		.style("z-index", "20")
 		.style("visibility", "hidden")
-		.style("top", mapPlotHeight)
-		.style("left", "55px");
+		.style("top", mapPlotHeight + 50 + streamPlotMargin.top + "px") // 50 of nav top
+		.style("left", sidebarWidth + 80 + "px");
 
 	var x = d3.time.scale()
 		.range([0, streamPlotWidth]);
@@ -70,7 +73,7 @@ function chart(csvpath, color) {
 	    
 	var svg = d3.select(".chart").attr("align","center")
 		.append("svg")
-    	.attr("width", 1000)
+    	.attr("width", streamPlotWidth)
     	.attr("height", streamPlotHeight + streamPlotMargin.top + streamPlotMargin.bottom)
   		.append("g")
     	.attr("transform", "translate(" + streamPlotMargin.left + "," + streamPlotMargin.top + ")");

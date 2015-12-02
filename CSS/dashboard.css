@@ -52,9 +52,9 @@ body {
  * Map
  */
 #map {
-  height: -moz-calc(100% - 300px); /* Firefox */
-  height: -webkit-calc(100% - 300px); /* Chrome, Safari */
-  height: calc(100% - 300px); /* IE9+ and future browsers */
+  height: -moz-calc(100% - 200px); /* Firefox */
+  height: -webkit-calc(100% - 200px); /* Chrome, Safari */
+  height: calc(100% - 200px); /* IE9+ and future browsers */
   width: auto;
 }
 
