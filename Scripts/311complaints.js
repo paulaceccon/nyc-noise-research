@@ -108,6 +108,18 @@ function getQueryResult()
 	return query_result;
 }
 
+//---- Noise descriptors' colors
+function getNoiseDescritptors()
+{
+	return noise_description;
+}
+
+
+function getNoiseDescriptorsColors()
+{
+	return marker_colors;
+}
+
 	
 //---- Complaints localization
 
