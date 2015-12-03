@@ -24,9 +24,6 @@ function chart(csvpath, color) {
 	var streamPlotWidth = document.body.clientWidth - streamPlotMargin.left - streamPlotMargin.right - sidebarWidth;
 	var streamPlotHeight = 200 - streamPlotMargin.top - streamPlotMargin.bottom;
 	
-
-	console.log(mapPlotHeight);
-	console.log(streamPlotWidth);
 	var tooltip = d3.select("body")
 		.append("div")
 		.attr("class", "remove")
@@ -62,8 +59,9 @@ function chart(csvpath, color) {
 		.x(function(d) { return d.date; })
 		.y(function(d) { return d.value; });
 
+	// Group by key
 	var nest = d3.nest()
-		.key(function(d) { return d.key; });
+		.key(function(d) { return d.key; })
 
 	var area = d3.svg.area()
 		.interpolate("cardinal")
@@ -83,6 +81,7 @@ function chart(csvpath, color) {
 		d.date = format.parse(d.date);
 		d.value = +d.value;
 	  });
+// 	  console.log(data);
 
 	  var layers = stack(nest.entries(data));
 
@@ -100,11 +99,6 @@ function chart(csvpath, color) {
 		  .attr("class", "x axis")
 		  .attr("transform", "translate(0," + streamPlotHeight + ")")
 		  .call(xAxis);
-
-	  svg.append("g")
-		  .attr("class", "y axis")
-		  .attr("transform", "translate(" + streamPlotWidth + ", 0)")
-		  .call(yAxis.orient("right"));
 
 	  svg.append("g")
 		  .attr("class", "y axis")
@@ -149,14 +143,14 @@ function chart(csvpath, color) {
 		  		  .classed("hover", false)
 		  		  .attr("stroke-width", "0px"), tooltip.html( "<p>" + d.key + "<br>" + pro + "</p>" ).style("visibility", "hidden");
 	  })
-	  console.log(mapPlotHeight);
+
 	  var vertical = d3.select(".chart")
 			.append("div")
 			.attr("class", "remove")
 			.style("position", "absolute")
 			.style("z-index", "19")
 			.style("width", "1px")
-			.style("height", "300px")
+			.style("height", "200px")
 			.style("top", mapPlotHeight + streamPlotMargin.bottom)
 			.style("bottom", "0px")
 			.style("left", "0px")

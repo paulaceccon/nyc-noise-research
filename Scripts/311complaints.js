@@ -10,6 +10,9 @@ var overlays = {};
 
 // Data URL variable
 var URL;
+
+// Query result
+var query_result = "";
 									  						  			
 //---- Noise variables
 
@@ -78,11 +81,10 @@ function buildQuery(startDate, endDate)
     URL += "(complaint_type like '%" + c_type + "%')";
     URL += " AND ";
     URL += "(created_date>='" + start_date + "') AND (created_date<='" + end_date + "')"; // Date range
-    URL += "&$group=complaint_type,descriptor,latitude,longitude";                        // Fields to group by
-    URL += "&$select=descriptor,latitude,longitude,complaint_type";                       // Fields to return
+    URL += "&$group=created_date,descriptor,latitude,longitude";                          // Fields to group by
+    URL += "&$select=created_date,descriptor,latitude,longitude";                         // Fields to return
 
     URL = encodeURI(URL); 
-	console.log(URL);
 }
 
 // Formats the date into the appropriated input for the query
@@ -100,19 +102,30 @@ function formattedDate(date)
 }
 	
 	
+//---- Query results
+function getQueryResult()
+{
+	return query_result;
+}
+
+	
 //---- Complaints localization
 
 //	Load GeoJSON from an external file
 function load311ComplaintsIntoMap(map)
 {
-	console.log(URL);
 	cleanMap();
-	$.getJSON(URL, function(data)
+	$.ajax({async: false, url: URL, success: function(data)
 	{
 		if ( data.length == 0 ) 
 		{
 			return;
 		}
+		
+		// Save the result
+		query_result = data;
+		console.log(query_result);
+		
 		var markers = []
 		for (var i = 0; i < noise_description.length; i++) 
 		{
@@ -163,7 +176,7 @@ function load311ComplaintsIntoMap(map)
 
 		// Add layer control using above object
 		layer = L.control.layers(null,overlays).addTo(map);
-	});
+	}});
 }
 
 // Cleans the map current markers and control 
