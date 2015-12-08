@@ -74,7 +74,7 @@
 				</div>
 			  </div>
 			  <div id="map"></div>
-			  <div class="chart"></div>
+			  <div id="streamgraph" class="chart"></div>
 			</div>
 
       		<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
@@ -126,7 +126,7 @@
 						if ( rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
 						{
 							var hour = new Date(rec.created_date).getHours();
-							var hour = (hour == 0) ? 24 : hour;
+// 							var hour = (hour == 0) ? 24 : hour;
 							jsonArr.push({
 								"hour": hour,
 								"value": 1,
@@ -136,8 +136,8 @@
 					});
 
 					var desc_colors = getNoiseDescriptorsColors();
-					var hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
-								 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
+					var hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+								 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
 							
 					var dict = {__array:[]};	
 					for(var desc in desc_colors)

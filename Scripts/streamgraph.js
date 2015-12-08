@@ -1,4 +1,3 @@
-var datearray = [];
 var colorrange = [];
 
 function chart(data, desc_colors) 
@@ -53,7 +52,6 @@ function chart(data, desc_colors)
 		.x(function(d) { return d.hour; })
 		.y(function(d) { return d.value; });
 
-	// Group by key
 	var nest = d3.nest()
 		.key(function(d) { return d.key; })
 
@@ -63,7 +61,9 @@ function chart(data, desc_colors)
 		.y0(function(d) { return y(d.y0); })
 		.y1(function(d) { return y(d.y0 + d.y); });
 	    
-	var svg = d3.select(".chart").attr("align","center")
+	d3.selectAll("#streamgraph > *").remove();
+	
+	var svg = d3.select("#streamgraph").attr("align","center")
 		.append("svg")
     	.attr("width", streamPlotWidth + streamPlotMargin.right + streamPlotMargin.left)
     	.attr("height", streamPlotHeight + streamPlotMargin.top + streamPlotMargin.bottom)
@@ -109,11 +109,9 @@ function chart(data, desc_colors)
 		  mousex = d3.mouse(this);
 		  mousex = mousex[0];
 		  var invertedx = x.invert(mousex);
-		  console.log(invertedx);
 
 		  pro = d.values[Math.round(invertedx)].value;
 		  
-		  console.log(pro);
 		  d3.select(this)
 		  	.classed("hover", true)
 		  	.attr("stroke", strokecolor)
