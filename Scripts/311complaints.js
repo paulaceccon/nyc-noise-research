@@ -40,7 +40,6 @@ var descriptors_colors = {'Air Condition/Ventilation Equipment': '#7f3b08',
 //---- 311 Query Request
 
 // Builds the query URL based on a date range
-// BUGFIX: URL encoding 
 function buildQuery(startDate, endDate)
 {
 	/*http://data.cityofnewyork.us/resource/erm2-nwe9.json?$where=(latitude%20IS%20NOT%20NULL)%
@@ -89,15 +88,9 @@ function getQueryResult()
 }
 
 //---- Noise descriptors' colors
-function getNoiseDescritptors()
-{
-	return noise_description;
-}
-
-
 function getNoiseDescriptorsColors()
 {
-	return marker_colors;
+	return descriptors_colors;
 }
 
 	

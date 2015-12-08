@@ -1,7 +1,7 @@
 var datearray = [];
 var colorrange = [];
 
-function chart(data, colorrange, description) 
+function chart(data, desc_colors) 
 {	
 	strokecolor = "#045A8D";
 
@@ -12,6 +12,12 @@ function chart(data, colorrange, description)
 	var streamPlotWidth = document.body.clientWidth - streamPlotMargin.left - streamPlotMargin.right - sidebarWidth;
 	var streamPlotHeight = 200 - streamPlotMargin.top - streamPlotMargin.bottom;
 	
+	var colorrange = [];
+	for (key in desc_colors)
+	{
+		colorrange.push(desc_colors[key]);
+	}
+	
 	var tooltip = d3.select("body")
 		.append("div")
 		.attr("class", "remove")
@@ -21,7 +27,7 @@ function chart(data, colorrange, description)
 		.style("top", mapPlotHeight + 50 + streamPlotMargin.top + "px") // 50 of nav top
 		.style("left", sidebarWidth + 80 + "px");
 
-	var x = d3.time.scale()
+	var x = d3.scale.linear()
 		.range([0, streamPlotWidth]);
 
 	var y = d3.scale.linear()
@@ -33,7 +39,7 @@ function chart(data, colorrange, description)
 	var xAxis = d3.svg.axis()
 		.scale(x)
 		.orient("bottom")
-		.ticks(d3.time.weeks);
+		.ticks(24);
 
 	var yAxis = d3.svg.axis()
 		.scale(y);
@@ -44,7 +50,7 @@ function chart(data, colorrange, description)
 	var stack = d3.layout.stack()
 		.offset("silhouette")
 		.values(function(d) { return d.values; })
-		.x(function(d) { return d.date; })
+		.x(function(d) { return d.hour; })
 		.y(function(d) { return d.value; });
 
 	// Group by key
@@ -53,31 +59,25 @@ function chart(data, colorrange, description)
 
 	var area = d3.svg.area()
 		.interpolate("cardinal")
-		.x(function(d) { return x(d.date); })
+		.x(function(d) { return x(d.hour); })
 		.y0(function(d) { return y(d.y0); })
 		.y1(function(d) { return y(d.y0 + d.y); });
 	    
 	var svg = d3.select(".chart").attr("align","center")
 		.append("svg")
-    	.attr("width", streamPlotWidth)
+    	.attr("width", streamPlotWidth + streamPlotMargin.right + streamPlotMargin.left)
     	.attr("height", streamPlotHeight + streamPlotMargin.top + streamPlotMargin.bottom)
   		.append("g")
     	.attr("transform", "translate(" + streamPlotMargin.left + "," + streamPlotMargin.top + ")");
     
 	data.forEach(function(d) {
-	  d.date = d.date;
+	  d.hour = d.hour;
 	  d.value = +d.value;
 	});
 	
-	console.log(data);
-	console.log(nest.entries(data));
-	
     var layers = stack(nest.entries(data));
-    
-    
-    console.log(layers);
 
-    x.domain(d3.extent(data, function(d) { return d.date; }));
+    x.domain(d3.extent(data, function(d) { return d.hour; }));
     y.domain([0, d3.max(data, function(d) { return d.y0 + d.y; })]);
 
 	  svg.selectAll(".layer")
@@ -109,16 +109,11 @@ function chart(data, colorrange, description)
 		  mousex = d3.mouse(this);
 		  mousex = mousex[0];
 		  var invertedx = x.invert(mousex);
-		  invertedx = invertedx.getMonth() + invertedx.getDate();
-		  var selected = (d.values);
-		  for (var k = 0; k < selected.length; k++) {
-			datearray[k] = selected[k].date
-			datearray[k] = datearray[k].getMonth() + datearray[k].getDate();
-		  }
+		  console.log(invertedx);
 
-		  mousedate = datearray.indexOf(invertedx);
-		  pro = d.values[mousedate].value;
-
+		  pro = d.values[Math.round(invertedx)].value;
+		  
+		  console.log(pro);
 		  d3.select(this)
 		  	.classed("hover", true)
 		  	.attr("stroke", strokecolor)
