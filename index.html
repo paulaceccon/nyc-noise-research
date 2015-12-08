@@ -88,6 +88,9 @@
             <!-- ################ -->
 			<!-- ####Bootstrap### -->
 			<script src="bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+			<!-- ################ -->			
+			<!-- ###Underscore### -->
+			<script src="http://underscorejs.org/underscore.js"></script>
 			<!-- ################ -->
 			<!-- #####Custom##### -->
             <script src="Scripts/map.js"></script>
@@ -101,46 +104,88 @@
     		var map = createMap();
     		loadNeighborhoods();
     		
-    		$(document).ready(function() {
-    			$('#updateData').click(function() {
+    		$(document).ready(function() 
+    		{
+    			$('#updateData').click(function() 
+    			{
+    				// Map Points
       				buildQuery($('#startDate').val(), $('#endDate').val());
       				load311ComplaintsIntoMap(map);
       				
+      				// Json Pre-Processing for StreamGraph
       				var query_result = getQueryResult();
       				
       				if ( query_result.length == 0 ) 
 					{
 						return;
 					}
-					var jsonArr = [];
-					$.each(query_result, function(index, rec)
-					{
-						if ( rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
-						{
-							var date = rec.created_date.split("T")[0];
-							jsonArr.push({
-								"date": date,
-								"value": 1,
-								"key": rec.descriptor
-							});
-						}
-					});
-					var result = jsonArr.reduce(function(res, obj) 
-					{
-						if (!(obj.date in res))
-						{
-							res.__array.push(res[obj.date] = obj);
-						}
-						else 
-						{
-							res[obj.date].value += 1;
-						}
-						return res;
-					}, {__array:[]});
-					console.log(result);
+// 					console.log(query_result);
+					// var jsonArr = [];
+// 					$.each(query_result, function(index, rec)
+// 					{
+// 						if ( rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
+// 						{
+// 							var date = new Date(rec.created_date).getHours();
+// 							var date = (date == 0) ? 24 : date;
+// 							jsonArr.push({
+// 								"date": date,
+// 								"value": 1,
+// 								"key": rec.descriptor
+// 							});
+// 						}
+// 					});
+// 
+// 					var keys = getNoiseDescritptors();
+// 					var dates = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+// 								 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
+// 							
+// 					var dict = {__array:[]};	
+// 					for(var i = 0; i < keys.length; i++)
+// 					{
+// 						for (var j = 0; j < dates.length; j++)
+// 						{
+// 							var key = dates[j]+"|"+keys[i];
+// 							if (!(key in dict))
+// 							{
+// 								dict.__array.push(dict[key] = {
+// 									"date": dates[j],
+// 									"value": 0,
+// 									"key": keys[i]
+// 								});
+// 							}
+// 						}
+// 					}	
+// 					console.log(dict.__array);
+// 					$.each(jsonArr, function(index, rec)
+// 					{
+// 						var key = rec.date+"|";
+// 						// Building key accordingly to pre-defined keys
+// 						for (var i = 0; i < keys.length; i++) 
+// 						{
+// 							if (rec.key.indexOf(keys[i]) > -1) 
+// 							{
+// 								key += keys[i];
+// 								break;
+// 							}
+// 							if (i == keys.length-1) 
+// 							{
+// 								key += keys[i];
+// 							}
+// 						}
+// 						obj = dict[key];
+// 						obj["value"] += 1;
+// 						dict[key] = obj;
+// 						
+// 					});
+// 					console.log(dict.__array);
+// 						
+// // 					// Stream Graph
+// 					var descriptors = getNoiseDescritptors();
+// 					var colorrange = getNoiseDescriptorsColors();
+// 					chart(dict.__array, colorrange, descriptors);
     			});
 			});
 			
-			chart("data.csv", "orange");
+			// chart("data.csv", "orange");
 		</script>
 </html>

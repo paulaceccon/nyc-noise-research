@@ -2,7 +2,7 @@
 
 //---- Map layers
 // To store all markers layers
-var layers = [];
+var layers = {};
 // To store the control layer
 var layer;
 // To store all markers per descriptions
@@ -16,46 +16,26 @@ var query_result = "";
 									  						  			
 //---- Noise variables
 
-// Noise Descriptions	
-var noise_description = ['Air Condition/Ventilation Equipment', 
-						 'Alarms',
-						 'Banging/Pounding', 
-						 'Barking Dog', 
-						 'Car/Truck Horn', 
-						 'Car/Truck Music', 
-						 'Construction Equipment', 
-						 'Construction Before/After Hours', 
-						 'Engine Idling', 
-						 'Ice Cream Truck', 
-						 'Jack Hammering', 
-						 'Lawn Care Equipment',
-						 'Loud Music/Party',
-						 'Loud Talking',
-						 'Loud Television',
-						 'Manufacturing Noise',
-						 'Private Carting Noise',
-						 'Others'];
-			
-// Noise Description's colors			 
-var marker_colors = ['#7f3b08',
-					 '#a50026',
-					 '#d73027',
-					 '#f46d43',
-					 '#fdae61',
-					 '#fee090',
-					 '#ffffbf',
-					 '#ffffff',
-					 '#e0f3f8',
-					 '#abd9e9',
-					 '#74add1',
-					 '#4575b4',
-					 '#313695',
-					 '#d8daeb',
-					 '#b2abd2',
-					 '#8073ac',
-					 '#542788',
-					 '#000000'];
-
+// Noise Descriptions' colors	
+					 
+var descriptors_colors = {'Air Condition/Ventilation Equipment': '#7f3b08', 
+						 'Alarms': '#a50026',
+						 'Banging/Pounding': '#d73027', 
+						 'Barking Dog': '#f46d43', 
+						 'Car/Truck Horn': '#fdae61', 
+						 'Car/Truck Music': '#fee090', 
+						 'Construction Equipment': '#ffffbf', 
+						 'Construction Before/After Hours': '#ffffff', 
+						 'Engine Idling': '#e0f3f8', 
+						 'Ice Cream Truck': '#abd9e9', 
+						 'Jack Hammering': '#74add1', 
+						 'Lawn Care Equipment': '#4575b4',
+						 'Loud Music/Party': '#4575b4',
+						 'Loud Talking': '#d8daeb',
+						 'Loud Television': '#b2abd2',
+						 'Manufacturing Noise': '#8073ac',
+						 'Private Carting Noise': '#542788',
+						 'Others': '#000000'};						 
 
 //---- 311 Query Request
 
@@ -136,12 +116,12 @@ function load311ComplaintsIntoMap(map)
 		
 		// Save the result
 		query_result = data;
-		console.log(query_result);
+// 		console.log(query_result);
 		
-		var markers = []
-		for (var i = 0; i < noise_description.length; i++) 
+		var markers = {}
+		for (var key in descriptors_colors) 
 		{
-			markers[i] = [];
+			markers[key] = [];
 		}
 
 		var all_markers = [];
@@ -151,19 +131,19 @@ function load311ComplaintsIntoMap(map)
 			if ( rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
 			{
 				var marker;
-				for (var i = 0; i < noise_description.length; i++) 
+				for (key in descriptors_colors) 
 				{
-					if (rec.descriptor.indexOf(noise_description[i]) > -1) 
+					if (rec.descriptor.indexOf(key) > -1) 
 					{
-						marker = L.circleMarker([rec.latitude, rec.longitude], marker_style(i));
-						markers[i].push(marker); 
+						marker = L.circleMarker([rec.latitude, rec.longitude], marker_style(key));
+						markers[key].push(marker); 
 						all_markers.push(marker); 
 						break;
 					}
-					if (i == noise_description.length-1) 
+					if (key == "Others") 
 					{
-						marker = L.circleMarker([rec.latitude, rec.longitude], marker_style(i));
-						markers[i].push(marker); 
+						marker = L.circleMarker([rec.latitude, rec.longitude], marker_style(key));
+						markers[key].push(marker); 
 						all_markers.push(marker); 
 					}
 				}
@@ -174,16 +154,16 @@ function load311ComplaintsIntoMap(map)
 		// Create layer of all markers but do not add to map
 		var all_layers = L.featureGroup(all_markers);		
 		// Create specific layers of markers and add to map
-		for (var i = 0; i < markers.length; i++) 
+		for (var key in markers) 
 		{
-			layers[i] = L.featureGroup(markers[i]).addTo(map);
-			layers[i].bringToFront();
+			layers[key] = L.featureGroup(markers[key]).addTo(map);
+			layers[key].bringToFront();
 		}
 		map.fitBounds(all_layers.getBounds());
 	
-		for (var i = 0; i < noise_description.length; i++) 
+		for (var key in descriptors_colors) 
 		{
-			overlays['<i style="background:' + getColor(i) + '"></i> ' +noise_description[i]] = layers[i];
+			overlays['<i style="background:' + getColor(key) + '"></i> ' +key] = layers[key];
 		}
 
 		// Add layer control using above object
@@ -194,25 +174,25 @@ function load311ComplaintsIntoMap(map)
 // Cleans the map current markers and control 
 function cleanMap()
 {
-    for (var i = 0; i < layers.length; i++) 
+    for (var key in layers) 
 	{
-		map.removeLayer(layers[i]);
+		map.removeLayer(layers[key]);
 	}
 	if (Object.keys(overlays).length)
 		layer.removeFrom(map);
 }
 
 // Gets the color of a specific noise descriptor
-function getColor(d) 
+function getColor(key) 
 {
-	return marker_colors[d];
+	return descriptors_colors[key];
 }
 
 // Defines the marker style for each marker
-function marker_style(i) 
+function marker_style(key) 
 {
 	return {
-		fillColor: getColor(i),
+		fillColor: getColor(key),
 		radius: 5,
 		weight: 1,
 		opacity: 1,

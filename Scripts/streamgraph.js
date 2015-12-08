@@ -1,21 +1,9 @@
 var datearray = [];
 var colorrange = [];
 
-function chart(csvpath, color) {
-
-	if (color == "blue") {
-	  colorrange = ["#045A8D", "#2B8CBE", "#74A9CF", "#A6BDDB", "#D0D1E6", "#F1EEF6"];
-	}
-	else if (color == "pink") {
-	  colorrange = ["#980043", "#DD1C77", "#DF65B0", "#C994C7", "#D4B9DA", "#F1EEF6"];
-	}
-	else if (color == "orange") {
-	  colorrange = ["#B30000", "#E34A33", "#FC8D59", "#FDBB84", "#FDD49E", "#FEF0D9"];
-	}
-	
-	strokecolor = colorrange[0];
-
-	var format = d3.time.format("%m/%d/%y");
+function chart(data, colorrange, description) 
+{	
+	strokecolor = "#045A8D";
 
 	var mapPlotHeight = parseInt(d3.select("#map").style("height"));
 	var mapPlotHeight = parseInt(d3.select("#map").style("height"));
@@ -76,17 +64,21 @@ function chart(csvpath, color) {
   		.append("g")
     	.attr("transform", "translate(" + streamPlotMargin.left + "," + streamPlotMargin.top + ")");
     
-	var graph = d3.csv(csvpath, function(data) {
-	  data.forEach(function(d) {
-		d.date = format.parse(d.date);
-		d.value = +d.value;
-	  });
-// 	  console.log(data);
+	data.forEach(function(d) {
+	  d.date = d.date;
+	  d.value = +d.value;
+	});
+	
+	console.log(data);
+	console.log(nest.entries(data));
+	
+    var layers = stack(nest.entries(data));
+    
+    
+    console.log(layers);
 
-	  var layers = stack(nest.entries(data));
-
-	  x.domain(d3.extent(data, function(d) { return d.date; }));
-	  y.domain([0, d3.max(data, function(d) { return d.y0 + d.y; })]);
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    y.domain([0, d3.max(data, function(d) { return d.y0 + d.y; })]);
 
 	  svg.selectAll(".layer")
 		  .data(layers)
@@ -165,5 +157,4 @@ function chart(csvpath, color) {
 			 mousex = d3.mouse(this);
 			 mousex = mousex[0] + 5;
 			 vertical.style("left", mousex + "px")});
-	});
 }
