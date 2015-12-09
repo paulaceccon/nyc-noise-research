@@ -33,7 +33,7 @@ function createMap()
 // Loads GeoJSON from an external file
 function loadNeighborhoods()
 {
-	$.getJSON("https://nycdatastables.s3.amazonaws.com/2013-08-19T18:22:23.125Z/community-districts-polygon.geojson", function(data)
+	$.ajax({async: false, dataType: "json", url: "https://nycdatastables.s3.amazonaws.com/2013-08-19T18:22:23.125Z/community-districts-polygon.geojson", success: function(data)
 	{
 		// Add GeoJSON layer to the map once the file is loaded
 		geojson = L.geoJson(data,  
@@ -41,7 +41,7 @@ function loadNeighborhoods()
 			style: style,
 			onEachFeature: onEachFeature
 		}).addTo(map);
-	});
+	}});
 	
     // Control that shows state info on hover
 	info = L.control();

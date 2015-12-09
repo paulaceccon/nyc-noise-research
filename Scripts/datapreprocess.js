@@ -66,8 +66,10 @@ function complaints_per_hour(data)
 
 // https://www.mapbox.com/mapbox.js/example/v1.0.0/point-in-polygon/
 function complaints_per_region(complaints_data)
-{
+{	
+	var dict = {};
 	var regions = getNeighborhoods();
+	console.log(regions);
        //  L.marker([38, -102], {
 //             icon: L.mapbox.marker.icon({
 //                 'marker-color': '#f86767'
@@ -86,8 +88,13 @@ function complaints_per_region(complaints_data)
 	{
 		if ( rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
 		{
-			var layer = leafletPip.pointInLayer(rec.getLatLng(), regions, true);
+			var layer = leafletPip.pointInLayer([rec.longitude , rec.latitude], regions, true);
 			console.log(layer);
+			// if (layer.length) {
+//               state.innerHTML = '<strong>' + layer[0].feature.properties.name + '</strong>';
+//             } else {
+//               state.innerHTML = '';
+//             }
 		}
 	});
 }

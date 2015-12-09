@@ -187,8 +187,8 @@ function marker_style(key)
 {
 	return {
 		fillColor: getColor(key),
-		radius: 5,
-		weight: 1,
+		radius: 4,
+		weight: 0,
 		opacity: 1,
 		color: 'white',
 		dashArray: '3',

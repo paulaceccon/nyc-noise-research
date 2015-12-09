@@ -115,14 +115,15 @@
       				
       				// Complaints Points
       				load311ComplaintsIntoMap(map);
-// 					complaints_per_region(query_result);
-					
+
       				var query_result = getQueryResult();
       				if ( query_result.length == 0 ) 
 					{
 						console.log("Empty result for query");
 						return;
 					}
+					
+					complaints_per_region(query_result);
 					
 					// Stream Graph
 					var desc_colors = getNoiseDescriptorsColors();
