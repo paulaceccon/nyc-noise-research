@@ -6,6 +6,9 @@ var map;
 // Geojson of the neighborhoods reference
 var geojson;
 
+// States info
+var info;
+
 // ---- Map Creation
 // Creates a map inside div id="map"
 function createMap()
@@ -21,7 +24,7 @@ function createMap()
 		maxZoom: 18, 
 		minZoom: 10
 	}).addTo(map);
-	
+		
 	return map;
 }
 
@@ -39,6 +42,27 @@ function loadNeighborhoods()
 			onEachFeature: onEachFeature
 		}).addTo(map);
 	});
+	
+    // Control that shows state info on hover
+	info = L.control();
+
+	info.onAdd = function (map) {
+		this._div = L.DomUtil.create('div', 'info');
+		this.update();
+		return this._div;
+	};
+
+	info.update = function (props) {
+		this._div.innerHTML = (props ? '<b> Region ID:'+ props.communityDistrict +' </b><br />' : 'Hover over a state');
+	};
+
+	info.addTo(map);
+}
+
+// Returns the neighborhoods
+function getNeighborhoods()
+{
+	return geojson;	
 }
 
 // Defines the existent behaviors that
@@ -82,6 +106,7 @@ function highlightFeature(e)
 	{
 		layer.bringToFront();
 	}
+	info.update(layer.feature.properties);
 }
 
 // Resets the style of a neighborhood previous
@@ -95,6 +120,7 @@ function resetHighlight(e)
 	{
 		layer.bringToBack();
 	}
+	info.update();
 }
 
 // Defines the behavior when a neighborhood 

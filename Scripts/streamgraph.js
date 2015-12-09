@@ -1,6 +1,6 @@
 var colorrange = [];
 
-function chart(data, desc_colors) 
+function streamgraph_chart(data, desc_colors) 
 {	
 	strokecolor = "#045A8D";
 

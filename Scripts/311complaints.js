@@ -49,7 +49,7 @@ function buildQuery(startDate, endDate)
 	
 	var start_date = formattedDate(startDate)+"T00:00:00";  //YYYY-MM-DD
 	var end_date = formattedDate(endDate)+"T23:59:59";      //YYYY-MM-DD
-	var c_type = 'Noise'; 		   							       // Complaint Type
+	var c_type = 'Noise'; 		   							// Complaint Type
 
 	// Build the data URL
     URL = "http://data.cityofnewyork.us/resource/fhrw-4uyv.json"; // API Access Endpoint
@@ -154,9 +154,10 @@ function load311ComplaintsIntoMap(map)
 		}
 		map.fitBounds(all_layers.getBounds());
 	
+	    // http://fiddle.jshell.net/nathansnider/qvv007aq/
 		for (var key in descriptors_colors) 
 		{
-			overlays['<i style="background:' + getColor(key) + '"></i> ' +key] = layers[key];
+			overlays['<div style="background:' + getColor(key) + '; border-radius: 50%; width: 10px; height: 10px; display:inline-block;"></div> ' +key] = layers[key];
 		}
 
 		// Add layer control using above object
