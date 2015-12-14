@@ -1,4 +1,4 @@
-# NYCNoise
+# NYCNoise Inference
 
 Implementation based on :
 
