@@ -1,4 +1,4 @@
-# NYCNoise Inference
+# NYC Noise Inference
 
 Implementation based on :
 
