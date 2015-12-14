@@ -100,7 +100,7 @@ function getNoiseDescriptorsColors()
 function load311ComplaintsIntoMap(map)
 {
 	cleanMap();
-	$.ajax({async: false, url: URL, success: function(data)
+	$.ajax({async: false, timeout: 30000, url: URL, success: function(data)
 	{
 		if ( data.length == 0 ) 
 		{

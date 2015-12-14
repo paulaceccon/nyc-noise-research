@@ -89,7 +89,7 @@ function complaints_per_region(complaints_data)
 		if ( rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
 		{
 			var layer = leafletPip.pointInLayer([rec.longitude , rec.latitude], regions, true);
-			console.log(layer);
+// 			console.log(layer);
 			// if (layer.length) {
 //               state.innerHTML = '<strong>' + layer[0].feature.properties.name + '</strong>';
 //             } else {

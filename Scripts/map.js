@@ -53,7 +53,7 @@ function loadNeighborhoods()
 	};
 
 	info.update = function (props) {
-		this._div.innerHTML = (props ? '<b> Region ID:'+ props.communityDistrict +' </b><br />' : 'Hover over a state');
+		this._div.innerHTML = (props ? '<b> Region ID:'+ props.id +' </b><br />' : 'Hover over a state');
 	};
 
 	info.addTo(map);
@@ -106,7 +106,7 @@ function highlightFeature(e)
 	{
 		layer.bringToFront();
 	}
-	info.update(layer.feature.properties);
+	info.update(layer.feature);
 }
 
 // Resets the style of a neighborhood previous
