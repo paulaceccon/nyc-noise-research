@@ -39,7 +39,7 @@ Data collect from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC Pre
     * [Landmarks](https://nycdatastables.s3.amazonaws.com/2013-06-18T20:17:34.010Z/nyc-landmarks-results.csv)
 
 3. Human Mobility Features 
-  * Collect using Foursquare API.
+  * Collected using [Foursquare API](https://developer.foursquare.com/resources/libraries).
   
 4. Noise Categories
    * Obtained from the [311](http://www1.nyc.gov/311/index.page) [data](http://data.cityofnewyork.us/resource/fhrw-4uyv.json)
