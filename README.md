@@ -7,9 +7,9 @@ Yu Zheng, Tong Liu, Yilun Wang, Yanmin Zhu, Yanchi Liu, and Eric Chang. 2014. Di
 - [*on hold*] Map visualization and interation 
 - [*in progress*] Noise inference
 
-Data collect from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC Prepared](http://data.nycprepared.org).
+Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC Prepared](http://data.nycprepared.org).
 
-1. The regions were stabilish according to the [community districts](https://nycdatastables.s3.amazonaws.com/2013-08-19T18:22:23.125Z/community-districts-polygon.geojson) of NYC.
+1. Regions stabilished according to the [community districts](https://nycdatastables.s3.amazonaws.com/2013-08-19T18:22:23.125Z/community-districts-polygon.geojson) of NYC.
 
 2. Geographical Features Considered:
 
