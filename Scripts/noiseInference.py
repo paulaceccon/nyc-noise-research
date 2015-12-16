@@ -1,3 +1,7 @@
+# Comprimento das rotas
+# Distribuicao vs densidade dois POIs
+# Categorias de POIs
+
 import urllib2, json, csv
 import numpy
 import requests
@@ -107,6 +111,26 @@ def get311NoiseComplaints():
 	
 	print query_string
 	result = requests.get(query_string).json()
+	
+	# Dictionary of complaints
+	complaints = {'Air Condition/Ventilation Equipment' : 0, 'Alarms' : 0, 
+				  'Banging/Pounding' : 0, 'Barking Dog' : 0, 'Car/Truck Horn' : 0, 
+				  'Car/Truck Music' : 0, 'Construction Equipment' : 0,
+				  'Construction Before/After Hours' : 0, 'Engine Idling' : 0, 
+				  'Ice Cream Truck' : 0, 'Jack Hammering' : 0, 'Lawn Care Equipment' : 0, 
+				  'Loud Music/Party' : 0, 'Loud Talking' : 0, 'Loud Television' : 0, 
+				  'Manufacturing Noise' : 0, 'Private Carting Noise' : 0, 'Others' : 0}
+				   
+	for record in result:
+		for key in complaints:
+			if key.find(record.get('descriptor')) > -1:
+				complaints[key] += 1
+				break
+			elif key == "Others":
+				complaints[key] += 1
+				
+				
+	print complaints
     
     
 ###################----------- Data Per Region -----------###################
