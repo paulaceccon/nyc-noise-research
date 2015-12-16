@@ -1,14 +1,12 @@
-# Comprimento das rotas
-# Distribuicao vs densidade dois POIs
-# Categorias de POIs
-
 import urllib2, json, csv
 import numpy
 import requests
+import itertools
 
 from shapely.geometry import shape, Point
 from rtree import index
 from datetime import datetime, date, timedelta
+from haversine import haversine
 
 ###################----------- Utils -----------###################
 def readJson(url):
@@ -43,21 +41,28 @@ def getRegions():
     return dict
     
     
-def getRoadsNodes():
+def getRoadsNodesAndEdges():
 	"""
-	Reads the nodes of the NYC roads, returning a list of tuples of (long, lat).
+	Reads the nodes/edges of the NYC roads, returning a list of tuples of (long, lat).
 	"""
 	nodes = []
+	edges = []
 	
 	f = open('../Resources/road-network.txt', 'r')
-	nodes_number = int(f.readline().split()[0])
-	print "Nodes:", nodes_number
+	nodes_edges = f.readline().split()
+	nodes_number = int(nodes_edges[0])
+	edges_number = int(nodes_edges[1])
+
 	for line in range(nodes_number):
 		lat_long = f.readline().split()
 		nodes.append((float(lat_long[1]), float(lat_long[0])))
+	
+	for line in range(edges_number):
+		n_n = f.readline().split()
+		edges.append((int(n_n[0]), int(n_n[1])))
 	f.close()
 	
-	return nodes
+	return nodes, edges
 	
 
 def getPOIs():
@@ -96,6 +101,22 @@ def getPOIs():
     return POIs
     
 
+def getEdgesDistance(edges, nodes):
+	"""
+	Returns a dictionary formed by a pair of nodes and the distance between them.
+	@edges an array of the nodes (tuples) that correspond to edges
+	@nodes an array of long/lat (tuples) 
+	"""
+	dict = {}
+	
+	for edge in edges:
+		node_1 = edge[0]
+		node_2 = edge[1]
+		dict[(nodes[node_1], nodes[node_2])] = haversine(nodes[node_1], nodes[node_2])
+		
+	return dict    
+    
+
 def get311NoiseComplaints():
     # Yesterday's date
 	date = str(datetime.date(datetime.now()) - timedelta(1))
@@ -127,10 +148,7 @@ def get311NoiseComplaints():
 				complaints[key] += 1
 				break
 			elif key == "Others":
-				complaints[key] += 1
-				
-				
-	print complaints
+				complaints[key] += 1				
     
     
 ###################----------- Data Per Region -----------###################
@@ -139,13 +157,15 @@ def pointInPolygon(polyDict, points):
 	Given a dictionary (@polyDict) of id : polygon and a list of points (as tuples),
 	returns a dictionary id : number of points inside polygon.
 	"""
-	dict = {}
+	dict_count = {}
+	dict_points = {}
 	
 	polygons = []
 	# Populate R-tree index with bounds of polygons
 	idx = index.Index()
 	for pos, poly in enumerate(polyDict):
-		dict[poly] = 0
+		dict_count[poly] = 0
+		dict_points[poly] = []
 		polygon = shape(polyDict[poly])
 		polygons.append(polygon)
 		idx.insert(pos, polygon.bounds)
@@ -155,7 +175,8 @@ def pointInPolygon(polyDict, points):
   		# Iterate through spatial index
   		for j in idx.intersection(point.coords[0]):
   			if point.within(polygons[j]):
-  				dict[j] += 1
+  				dict_count[j] += 1
+  				dict_points[j].append(p)
   				
   	# Not optmized
 #     for key, value in polyDict.iteritems():
@@ -166,7 +187,7 @@ def pointInPolygon(polyDict, points):
 #             if polygon.contains(point):
 #                 dict[key] += 1  				
   	
-  	return dict
+  	return dict_count, dict_points
 
 def POIsPerRegion(regions, POIs):
     """
@@ -186,8 +207,33 @@ def roadsNodesPerRegion(regions, nodes):
 	@nodes is a list of tuples (long, lat)
 	"""
 	return pointInPolygon(regions, nodes)
-
-
+	
+	
+def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
+	"""
+	Returns a dictionary formed by the id of a region and the total length of edges
+	that falls in this region.
+	@nodesPerRegion is a dictionary in the form id : number of nodes
+	@edges is a list of edges between nodes
+	"""
+	dict = {}
+	
+	edges_distance = getEdgesDistance(edges, nodes)
+# 	print edges_distance
+	for key, value in nodes_per_region_points.iteritems():
+		dict[key] = 0
+		combs = itertools.permutations(value, 2)
+# 		print combs
+		for comb in combs:
+			dist = edges_distance.get(comb, None)
+			if dist is not None:
+				dict[key] += dist
+# 				print comb, dist
+				
+	return dict
+				
+		
+	
 if __name__ == '__main__':
     # Geographical Features
     regions_bbox = getRegions()
@@ -203,13 +249,19 @@ if __name__ == '__main__':
 #     POIsPerRegion = POIsPerRegion(regions_bbox, POIs)
 #     print POIsPerRegion
 #     
-#     nodes = getRoadsNodes()
-#     print "Nodes:", len(nodes)
-#     
-#     print "Calculating nodes per Region"
-#     nodesPerRegion = roadsNodesPerRegion(regions_bbox, nodes)
-#     print nodesPerRegion
+    nodes, edges = getRoadsNodesAndEdges()
+    print "Nodes:", len(nodes)
+    print "Edges:", len(edges)
     
-    print "Getting noise complaints"
-    get311NoiseComplaints()
+    print "Calculating nodes per Region"
+    nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
+#     print nodes_per_region_number
+    
+    roads_lenght_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
+#     print roads_lenght_per_region
+    
+#     print "Getting noise complaints"
+#     get311NoiseComplaints()
+
+
     
