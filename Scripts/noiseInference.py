@@ -2,6 +2,7 @@ import urllib2, json, csv
 import numpy
 import requests
 import itertools
+import foursquare
 
 from shapely.geometry import shape, Point
 from rtree import index
@@ -117,10 +118,7 @@ def getEdgesDistance(edges, nodes):
 	return dict    
     
 
-def get311NoiseComplaints():
-    # Yesterday's date
-	date = str(datetime.date(datetime.now()) - timedelta(1))
-	
+def get311NoiseComplaints(date):	
 	query_string = "http://data.cityofnewyork.us/resource/fhrw-4uyv.json"
 	query_string += "?"                                                   
 	query_string += "$where="                                            
@@ -148,7 +146,14 @@ def get311NoiseComplaints():
 				complaints[key] += 1
 				break
 			elif key == "Others":
-				complaints[key] += 1				
+				complaints[key] += 1	
+				
+
+def getFoursquareCheckIns(date):
+	client = foursquare.Foursquare(client_id='FUG50WOUTS2FHTCUIVFUUXFFTUGGIC1CITI53KBXPAVDFDV0', 
+							       client_secret='2BLM42NTYGLNAA0J3ECOZSHJVJ0ZBC1S32MWBF24JWDN5PIX')
+	auth_uri = client.oauth.auth_url()	
+	print client.venues.explore(params={'near': 'New York, NY', 'time' : date})
     
     
 ###################----------- Data Per Region -----------###################
@@ -176,16 +181,7 @@ def pointInPolygon(polyDict, points):
   		for j in idx.intersection(point.coords[0]):
   			if point.within(polygons[j]):
   				dict_count[j] += 1
-  				dict_points[j].append(p)
-  				
-  	# Not optmized
-#     for key, value in polyDict.iteritems():
-#         dict[key] = 0
-#         polygon = shape(value)
-#         for p in POIs:
-#             point = Point(p[0], p[1])
-#             if polygon.contains(point):
-#                 dict[key] += 1  				
+  				dict_points[j].append(p)				
   	
   	return dict_count, dict_points
 
@@ -219,26 +215,26 @@ def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
 	dict = {}
 	
 	edges_distance = getEdgesDistance(edges, nodes)
-# 	print edges_distance
 	for key, value in nodes_per_region_points.iteritems():
 		dict[key] = 0
 		combs = itertools.permutations(value, 2)
-# 		print combs
 		for comb in combs:
 			dist = edges_distance.get(comb, None)
 			if dist is not None:
 				dict[key] += dist
-# 				print comb, dist
 				
 	return dict
 				
 		
 	
 if __name__ == '__main__':
-    # Geographical Features
-    regions_bbox = getRegions()
-    regions_number = len(regions_bbox)
-    print "Regions:", regions_number
+	# Yesterday's date
+	date = str(datetime.date(datetime.now()) - timedelta(1))
+	
+	# Geographical Features
+	regions_bbox = getRegions()
+	regions_number = len(regions_bbox)
+	print "Regions:", regions_number
 
     # print "Reading POIs..."
 #     POIs = getPOIs()
@@ -249,19 +245,22 @@ if __name__ == '__main__':
 #     POIsPerRegion = POIsPerRegion(regions_bbox, POIs)
 #     print POIsPerRegion
 #     
-    nodes, edges = getRoadsNodesAndEdges()
-    print "Nodes:", len(nodes)
-    print "Edges:", len(edges)
-    
-    print "Calculating nodes per Region"
-    nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
+#     nodes, edges = getRoadsNodesAndEdges()
+#     print "Nodes:", len(nodes)
+#     print "Edges:", len(edges)
+#     
+#     print "Calculating nodes per Region"
+#     nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
 #     print nodes_per_region_number
-    
-    roads_lenght_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
+#     
+#     roads_lenght_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
 #     print roads_lenght_per_region
-    
+#     
 #     print "Getting noise complaints"
-#     get311NoiseComplaints()
+#     get311NoiseComplaints(date)
+
+	print "Getting Foursquare check-ins"
+	getFoursquareCheckIns(date)
 
 
     
