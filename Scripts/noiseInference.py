@@ -3,6 +3,9 @@ import numpy
 import requests
 import itertools
 import foursquare
+import calendar
+import datetime
+import time
 
 from shapely.geometry import shape, Point
 from rtree import index
@@ -26,7 +29,7 @@ def readCSV(url):
     return csv.DictReader(response, delimiter=',')
 
 
-###################----------- Collection Data -----------###################
+###################----------- Base Data -----------###################
 def getRegions():
     """
     Returns a dictionary formed by the id of a region and its coordinates.
@@ -106,7 +109,7 @@ def getEdgesDistance(edges, nodes):
 	"""
 	Returns a dictionary formed by a pair of nodes and the distance between them.
 	@edges an array of the nodes (tuples) that correspond to edges
-	@nodes an array of long/lat (tuples) 
+	@nodes an array of long/lat (tuples).
 	"""
 	dict = {}
 	
@@ -119,6 +122,10 @@ def getEdgesDistance(edges, nodes):
     
 
 def get311NoiseComplaints(date):	
+	"""
+	Given a @date (Y-m-d), returns a dictionary formed by complaint descriptor and the 
+	number complaints of this type.
+	"""
 	query_string = "http://data.cityofnewyork.us/resource/fhrw-4uyv.json"
 	query_string += "?"                                                   
 	query_string += "$where="                                            
@@ -150,11 +157,27 @@ def get311NoiseComplaints(date):
 				
 
 def getFoursquareCheckIns(date):
+	"""
+	Given a @date (Y-m-d), returns a dictionary formed by (lat, long) and the number 
+	of check-ins in the spot located at this coordinate.
+	"""
 	client = foursquare.Foursquare(client_id='FUG50WOUTS2FHTCUIVFUUXFFTUGGIC1CITI53KBXPAVDFDV0', 
 							       client_secret='2BLM42NTYGLNAA0J3ECOZSHJVJ0ZBC1S32MWBF24JWDN5PIX')
 	auth_uri = client.oauth.auth_url()	
-	print client.venues.explore(params={'near': 'New York, NY', 'time' : date})
-    
+	time_since_epoch = time.mktime(time.strptime(date, "%Y-%m-%d"))
+	checkins = client.venues.search(params={'near': 'New York, NY', 'afterTimestamp' : date})
+	
+	dict = {}
+	
+	for checkin in checkins['groups']:
+		for item in checkin['items']:
+			lat = item['venue']['location']['lat']
+			lng = item['venue']['location']['lng']
+			cic = item['venue']['stats']['checkinsCount']
+			dict[(lat, lng)] = cic
+			
+	return dict
+
     
 ###################----------- Data Per Region -----------###################
 def pointInPolygon(polyDict, points):
