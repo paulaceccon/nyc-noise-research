@@ -165,7 +165,7 @@ def getFoursquareCheckIns(date):
 							       client_secret='2BLM42NTYGLNAA0J3ECOZSHJVJ0ZBC1S32MWBF24JWDN5PIX')
 	auth_uri = client.oauth.auth_url()	
 	time_since_epoch = time.mktime(time.strptime(date, "%Y-%m-%d"))
-	checkins = client.venues.search(params={'near': 'New York, NY', 'afterTimestamp' : date})
+	checkins = client.venues.explore(params={'near': 'New York, NY', 'afterTimestamp' : date})
 	
 	dict = {}
 	
@@ -174,7 +174,7 @@ def getFoursquareCheckIns(date):
 			lat = item['venue']['location']['lat']
 			lng = item['venue']['location']['lng']
 			cic = item['venue']['stats']['checkinsCount']
-			dict[(lat, lng)] = cic
+			dict[(lng, lat)] = cic
 			
 	return dict
 
@@ -204,7 +204,7 @@ def pointInPolygon(polyDict, points):
   		for j in idx.intersection(point.coords[0]):
   			if point.within(polygons[j]):
   				dict_count[j] += 1
-  				dict_points[j].append(p)				
+  				dict_points[j].append(p)	
   	
   	return dict_count, dict_points
 
@@ -232,8 +232,8 @@ def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
 	"""
 	Returns a dictionary formed by the id of a region and the total length of edges
 	that falls in this region.
-	@nodesPerRegion is a dictionary in the form id : number of nodes
-	@edges is a list of edges between nodes
+	@nodes_per_region_points is a dictionary in the form id : number of nodes
+	@edges is a list of edges between @nodes
 	"""
 	dict = {}
 	
@@ -247,6 +247,19 @@ def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
 				dict[key] += dist
 				
 	return dict
+	
+	
+def checkinsPerRegion(regions, checkins):
+
+	dict = {}
+	
+	spots_per_region_number, spots_per_region_points = pointInPolygon(regions, checkins.keys())
+	for key, value in spots_per_region_points.iteritems():
+		dict[key] = 0
+		for v in value:
+			dict[key] += checkins[v]
+	
+	return dict
 				
 		
 	
@@ -259,31 +272,33 @@ if __name__ == '__main__':
 	regions_number = len(regions_bbox)
 	print "Regions:", regions_number
 
-    # print "Reading POIs..."
-#     POIs = getPOIs()
-#     print "POIs:", len(POIs)
+    print "Reading POIs..."
+    POIs = getPOIs()
+    print "POIs:", len(POIs)
 #     print "Done Reading POIs"
-# 
-#     print "Calculating POIs per Region"
-#     POIsPerRegion = POIsPerRegion(regions_bbox, POIs)
+
+    print "Calculating POIs per Region"
+    POIsPerRegion = POIsPerRegion(regions_bbox, POIs)
 #     print POIsPerRegion
-#     
-#     nodes, edges = getRoadsNodesAndEdges()
-#     print "Nodes:", len(nodes)
-#     print "Edges:", len(edges)
-#     
-#     print "Calculating nodes per Region"
-#     nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
+    
+    nodes, edges = getRoadsNodesAndEdges()
+    print "Nodes:", len(nodes)
+    print "Edges:", len(edges)
+    
+    print "Calculating nodes per Region"
+    nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
 #     print nodes_per_region_number
-#     
-#     roads_lenght_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
+    
+    roads_lenght_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
 #     print roads_lenght_per_region
-#     
-#     print "Getting noise complaints"
-#     get311NoiseComplaints(date)
+    
+    print "Getting noise complaints"
+    get311NoiseComplaints(date)
 
 	print "Getting Foursquare check-ins"
-	getFoursquareCheckIns(date)
-
-
+	checkins = getFoursquareCheckIns(date)
+	
+	print "Calculating check-ins per Region"
+	checkins_per_region = checkinsPerRegion(regions_bbox, checkins)
+# 	print checkins_per_region
     
