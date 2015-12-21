@@ -45,16 +45,27 @@ def fillX(regions_bbox, intersections_per_region, length_per_region,
     return X
 
 
-def fillY(taxi_dropoffs):
+def fillY(taxi_dropoffs_per_region):
     """
-    :param taxi_dropoffs:
-    :return:
+    Fill the Y matrix for the Tensor Context Aware Decomposition.
+    :param taxi_dropoffs_per_region: dictionary {region id : (long, lat, date)}.
+    :return: numpy array representing the human mobility per region and time slot.
     """
+    regions_count = len(taxi_dropoffs_per_region)
+
+    Y = numpy.zeros((regions_count, 24))
+
+    for key, value in taxi_dropoffs_per_region:
+        date = datetime.strptime(value[2], '%Y-%m-%d %H:%M:%S')
+        index = round(float(str(date.hour)+','+date(date.minute)))
+        Y[int(key), int(index)] += 1
+
+    return Y
 
 
 def fillZ(complaints_loc, dist):
     """
-    Calculates the correlation between each complaint category.
+    Fill the Z matrix for the Tensor Context Aware Decomposition.
     :param complaints_loc: dictionary {complaint type : [coordinates]}
     :param dist: minimum distance between coordinates to be considered.
     :return: numpy array containing the correlation between each complaint category.
@@ -77,3 +88,5 @@ def fillZ(complaints_loc, dist):
                             count += 1
                     sum += count
                 Z[index_1, index_2] = sum / float(len(loc_1) * len(loc_2))  # Correlation between category *i* and *j*
+
+    return Z
