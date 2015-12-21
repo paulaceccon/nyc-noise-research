@@ -10,11 +10,11 @@ def fillX(regions_bbox, intersections_per_region, length_per_region,
           POIs_abs_per_region):
     """
     Fill the X matrix for the Tensor Context Aware Decomposition.
-    @regions_bbox contains the bounding box, necessary to calculate each region area.
-    @intersections_per_area is a dictionary in the form id : number of intersections.
-    @length_per_region is a dictionary in the form id : total road length.
-    @POIs_abs_per_region is a dictionary in the form id : number of POIs.
-    @POIs_category_per_region is a dictionary in the form id :[{category : number}].
+    :param regions_bbox: bounding box of each region, necessary to calculate their areas.
+    :param intersections_per_region: dictionary {region id : total road length}.
+    :param length_per_region: dictionary {region id : number of POIs}.
+    :param POIs_abs_per_region: dictionary {complaint category : number}.
+    :return: a numpy array containing features (columns) by region (lines).
     """
     regions_count = len(regions_bbox)
 
@@ -45,10 +45,19 @@ def fillX(regions_bbox, intersections_per_region, length_per_region,
     return X
 
 
+def fillY(taxi_dropoffs):
+    """
+    :param taxi_dropoffs:
+    :return:
+    """
+
+
 def fillZ(complaints_loc, dist):
     """
-    Given a dictionary of complaints categories : coordinates of each complaint and a
-    distance @dist, returns a correlation matrix between each complaint category.
+    Calculates the correlation between each complaint category.
+    :param complaints_loc: dictionary {complaint type : [coordinates]}
+    :param dist: minimum distance between coordinates to be considered.
+    :return: numpy array containing the correlation between each complaint category.
     """
     complaints_loc = collections.OrderedDict(sorted(complaints_loc.items()))  # To maintain an order in a dict
     categories = len(complaints_loc)  # Number of different categories

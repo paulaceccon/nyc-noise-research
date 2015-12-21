@@ -3,7 +3,6 @@ import urllib2, json, csv
 import requests
 import itertools
 import foursquare
-import time
 
 from shapely.geometry import shape, Point
 from rtree import index
@@ -17,7 +16,9 @@ import tensorDecomposition
 ###################----------- Utils -----------###################
 def readJson(url):
     """
-    Returns a json file specified in @url.
+    Read a json file.
+    :param url: url to be read.
+    :return: a json file.
     """
     try:
         response = urllib2.urlopen(url)
@@ -28,7 +29,9 @@ def readJson(url):
 
 def readCSV(url):
     """
-    Returns a csv file specified in @url.
+    Read a csv file.
+    :param url: url to be read.
+    :return: an array of dictionaries.
     """
     try:
         response = urllib2.urlopen(url)
@@ -39,9 +42,10 @@ def readCSV(url):
 
 def calculateEdgesDistance(edges, nodes):
     """
-    Returns a dictionary formed by a pair of nodes and the distance between them.
-    @edges an array of the nodes (tuples) that correspond to edges
-    @nodes an array of long/lat (tuples).
+    Calculate the distance between two points.
+    :param edges: an array of nodes long/lat (tuples) that correspond to edges.
+    :param nodes: an array of long/lat (tuples) that corresponds to nodes.
+    :return: a dictionary {pair of nodes : the distance between them}
     """
     dict = {}
 
@@ -56,7 +60,8 @@ def calculateEdgesDistance(edges, nodes):
 ###################----------- Base Data -----------###################
 def getRegions():
     """
-    Returns a dictionary formed by the id of a region and its coordinates.
+    Get the community districts of NY.
+    :return: dictionary { region id : coordinates}.
     """
     dict = {}
 
@@ -71,7 +76,8 @@ def getRegions():
 
 def getRoadsNodesAndEdges():
     """
-    Reads the nodes/edges of the NYC roads, returning a list of tuples of (long, lat).
+    Reads the nodes/edges of the NYC roads.
+    :return: a list of nodes, and edges, both as tuples (long, lat).
     """
     nodes = []
     edges = []
@@ -95,7 +101,8 @@ def getRoadsNodesAndEdges():
 
 def getPOIs():
     """
-    Returns a list of tuples of POIs lat/long coordinates.
+    Get some Points of Interests of NY.
+    :return: list of tuples of POIs (long, lat).
     """
     urls = ["https://nycdatastables.s3.amazonaws.com/2013-06-04T18:02:56.019Z/museums-and-galleries-results.csv",
             "https://nycdatastables.s3.amazonaws.com/2013-12-16T21:49:55.716Z/nyc-parking-facilities-results.csv",
@@ -131,8 +138,9 @@ def getPOIs():
 
 def get311NoiseComplaints(date):
     """
-    Given a @date (Y-m-d), returns a dictionary formed by complaint descriptor and the
-    number complaints of this type.
+    Gets all noise complaints of NY from a staring date.
+    :param date: (Y-m-d).
+    :return: dictionary {complaint type : total number of complaints of this type}
     """
     query_string = "http://data.cityofnewyork.us/resource/fhrw-4uyv.json"
     query_string += "?"
@@ -172,15 +180,14 @@ def get311NoiseComplaints(date):
     return complaints, complaints_loc
 
 
-def getFoursquareCheckIns():
+def getFoursquareCheckIns(date):
     """
-    Given a @date (Y-m-d), returns a dictionary formed by (lat, long) and the number
-    of check-ins in the spot located at this coordinate.
+    Gets the check-ins occurred in NY from a starting date.
+    :param date: (Y-m-d).
+    :return: dictionary {(long, lat) : number of check-ins}.
     """
     client = foursquare.Foursquare(client_id='FUG50WOUTS2FHTCUIVFUUXFFTUGGIC1CITI53KBXPAVDFDV0',
                                    client_secret='2BLM42NTYGLNAA0J3ECOZSHJVJ0ZBC1S32MWBF24JWDN5PIX')
-    auth_uri = client.oauth.auth_url()
-    time_since_epoch = time.mktime(time.strptime(date, "%Y-%m-%d"))
     checkins = client.venues.explore(params={'near': 'New York, NY', 'afterTimestamp': date})
 
     dict = {}
@@ -196,7 +203,11 @@ def getFoursquareCheckIns():
 
 
 def getTaxiTrips(date):
-    # tpep_dropoff_datetime,dropoff_longitude,dropoff_latitude
+    """
+    Gets the taxi trips occurred in NY from a starting date.
+    :param date: (Y-m-d).
+    :return: list of tuples (long, lat, drop off date).
+    """
     today = date.split('-')
     today_y = today[0]
     today_m = today[1]
@@ -252,8 +263,10 @@ def getTaxiTrips(date):
 ###################----------- Data Per Region -----------###################
 def pointInPolygon(polyDict, points):
     """
-    Given a dictionary (@polyDict) of id : polygon and a list of @points (as tuples),
-    returns a dictionary id : number of points inside polygon.
+    Defines which points are inside which regions.
+    :param polyDict: dictionary {region id : polygon}.
+    :param points: list of tuples (long, lat).
+    :return: dictionaries {region id : number of points} and {region id : points}
     """
     dict_count = {}
     dict_points = {}
@@ -281,30 +294,31 @@ def pointInPolygon(polyDict, points):
 
 def POIsPerRegion(regions, POIs):
     """
-    Returns a dictionary formed by the id of a region and the number of POIs that falls in
-    this region.
-    @regions is a dictionary in the form id : region shape
-    @POIs is a list of tuples (long, lat)
+    Defines which POIs falls in which regions.
+    :param regions: dictionary {region id : polygon}.
+    :param POIs: list of tuples (long, lat).
+    :return: dictionaries {region id : number of POIs} and {region id : POIs' coordinates}
     """
     return pointInPolygon(regions, POIs)
 
 
 def roadsNodesPerRegion(regions, nodes):
     """
-    Returns a dictionary formed by the id of a region and the number of nodes that falls in
-    this region.
-    @regions is a dictionary in the form id : region shape
-    @nodes is a list of tuples (long, lat)
+    Defines which road nodes falls in which regions.
+    :param regions: dictionary {region id : polygon}.
+    :param nodes: list of tuples (long, lat).
+    :return: dictionaries {region id : number of road nodes} and {region id : roads nodes' coordinates}.
     """
     return pointInPolygon(regions, nodes)
 
 
 def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
     """
-    Returns a dictionary formed by the id of a region and the total length of edges
-    that falls in this region.
-    @nodes_per_region_points is a dictionary in the form id : number of nodes
-    @edges is a list of edges between @nodes
+    Obtain the total length of road bed per region.
+    :param nodes_per_region_points: dictionary {region id : number of roads nodes}.
+    :param edges: list of edges between nodes as tuples (long, lat).
+    :param nodes: list of tuples (long, lat).
+    :return: dictionary {region id : total roads length}.
     """
     dict = {}
 
@@ -321,6 +335,12 @@ def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
 
 
 def checkinsPerRegion(regions, checkins):
+    """
+    Obtain the total of check-ins that falls in a region.
+    :param regions: dictionary {region id : polygon}.
+    :param checkins: dictionary {(long, lat) : number of check-ins}.
+    :return: dictionary {region id : number of check-ins}.
+    """
     dict = {}
 
     spots_per_region_number, spots_per_region_points = pointInPolygon(regions, checkins.keys())
