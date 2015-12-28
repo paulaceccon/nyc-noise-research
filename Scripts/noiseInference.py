@@ -1,4 +1,5 @@
 # https://data.cityofnewyork.us/City-Government/road/svwp-sbcd
+# 28BBYCCUPYHWVFSSSD9Q
 import urllib2, json, csv
 import requests
 import itertools
@@ -390,3 +391,4 @@ if __name__ == '__main__':
 
     print "Getting taxi data"
     taxi_dropoffs = getTaxiTrips(date)
+    print len(taxi_dropoffs), "taxi trips"
