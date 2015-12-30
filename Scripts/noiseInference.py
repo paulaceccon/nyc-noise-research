@@ -1,4 +1,6 @@
 # https://data.cityofnewyork.us/City-Government/road/svwp-sbcd
+# https://data.cityofnewyork.us/api/geospatial/svwp-sbcd?method=export&format=GeoJSON
+# https://data.cityofnewyork.us/api/views/gdww-crzy/rows.json?accessType=DOWNLOAD
 # 28BBYCCUPYHWVFSSSD9Q
 import urllib2, json, csv
 import requests
