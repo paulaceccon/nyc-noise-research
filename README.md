@@ -5,7 +5,11 @@ Implementation based on :
 Yu Zheng, Tong Liu, Yilun Wang, Yanmin Zhu, Yanchi Liu, and Eric Chang. 2014. Diagnosing New York city's noises with ubiquitous data. In *Proceedings of the 2014 ACM International Joint Conference on Pervasive and Ubiquitous Computing* (UbiComp '14). ACM, New York, NY, USA, 715-725. DOI=http://dx.doi.org/10.1145/2632048.2632102
 
 - [*on hold*] Map visualization and interation 
-- [*in progress*] Noise inference
+   - Open *index.html* on a browser to see the current version.
+- [*in progress*] Noise inference:
+   - [x] Optimization method (can be tested running *python tensorDecomposition.py* on any terminal).
+   - [ ] Update road bed data.
+   - [ ] Properly use Foursquare data.
 
 Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC Prepared](http://data.nycprepared.org).
 
@@ -36,14 +40,15 @@ Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC P
  * Shopping
     * [Farmes Market](https://nycdatastables.s3.amazonaws.com/2013-06-13T18:39:44.536Z/nyc-2012-farmers-market-list-results.csv)
     * [Grocery Stores](https://nycdatastables.s3.amazonaws.com/2013-10-18T21:14:52.348Z/nyc-grocery-stores-final.csv)
- * Transport:
+ * Transport
     * [Subway Entrances](https://nycdatastables.s3.amazonaws.com/2013-06-18T14:29:37.626Z/subway-entrances-results.csv)
  * Travel
     * [Monuments](https://nycdatastables.s3.amazonaws.com/2013-06-04T17:58:59.335Z/map-of-monuments-results.csv)
     * [Landmarks](https://nycdatastables.s3.amazonaws.com/2013-06-18T20:17:34.010Z/nyc-landmarks-results.csv)
-
+ * [Road bed](https://data.cityofnewyork.us/City-Government/road/svwp-sbcd).
+ 
 3. Human Mobility Features 
-  * Collected using [Foursquare API](https://developer.foursquare.com/resources/libraries).
+  * Collected using [Foursquare API](https://developer.foursquare.com/resources/libraries), specifically, the [*venus/explore*](https://developer.foursquare.com/docs/venues/explore).
   
 4. Noise Categories
    * Obtained from the [311](http://www1.nyc.gov/311/index.page) [data](http://data.cityofnewyork.us/resource/fhrw-4uyv.json)
