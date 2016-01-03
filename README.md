@@ -45,7 +45,7 @@ Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC P
  * Travel
     * [Monuments](https://nycdatastables.s3.amazonaws.com/2013-06-04T17:58:59.335Z/map-of-monuments-results.csv)
     * [Landmarks](https://nycdatastables.s3.amazonaws.com/2013-06-18T20:17:34.010Z/nyc-landmarks-results.csv)
- * [Road bed](https://data.cityofnewyork.us/City-Government/road/svwp-sbcd).
+ * [Road bed](https://data.cityofnewyork.us/City-Government/road/svwp-sbcd)
  
 3. Human Mobility Features 
   * Collected using [Foursquare API](https://developer.foursquare.com/resources/libraries), specifically, the [*venus/explore*](https://developer.foursquare.com/docs/venues/explore).
