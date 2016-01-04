@@ -6,10 +6,51 @@ import math
 
 from haversine import haversine
 from shapely.geometry import shape
+from datetime import datetime, date, timedelta
 
 
-def fillX(regions_bbox, intersections_per_region, length_per_region,
-          POIs_abs_per_region):
+def roundTime(dt=None, roundTo=60):
+   """
+   Round a datetime object to any time laps in seconds
+   :param dt: datetime.datetime object, default now.
+   :param roundTo: closest number of seconds to round to, default 1 minute.
+   :return: the rounded time.
+   """
+   if dt == None : dt = datetime.now()
+   seconds = (dt - dt.min).seconds
+   rounding = (seconds+roundTo/2) // roundTo * roundTo
+   return dt + timedelta(0, rounding-seconds, -dt.microsecond)
+   
+   
+def fillA(regions_bbox, complaints_region_hour, complaints_loc):
+	"""
+	Fill the A matrix for the Tensor Context Aware Decomposition.
+	:param regions_bbox: bounding box of each region, necessary to calculate their areas.
+	:param complaints_region_hour: dictionary {region id : (long/lat, hour, complaint type)}.
+	:param complaints_loc: dictionary {complaint type : (long/lat, hour, complaint type)}.
+	:return: a numpy array containing the number complaints by region (line), type (column)
+	and hour (depth).
+	"""
+	regions_count = len(regions_bbox)
+	complaints_type_count = len(complaints_loc)
+	
+	complaints_loc = collections.OrderedDict(sorted(complaints_loc.items()))  # To maintain an order in a dict
+	
+	A = numpy.zeros((regions_count, complaints_type_count, 24))
+	
+	for key, value in complaints_region_hour.iteritems():
+		r = key
+		for complaints in value:
+			t = complaints[2]
+			c = complaints_loc.keys().index(complaints[3])
+			A[r, c, t] += 1
+		
+	# Normalization 
+	A /= numpy.amax(A)
+	return A
+
+
+def fillX(regions_bbox, intersections_per_region, length_per_region, POIs_per_region):
     """
     Fill the X matrix for the Tensor Context Aware Decomposition.
     :param regions_bbox: bounding box of each region, necessary to calculate their areas.
@@ -31,7 +72,7 @@ def fillX(regions_bbox, intersections_per_region, length_per_region,
         X[int(key), 1] = value
 
     # Number/Density of POIs per region
-    for key, value in POIs_abs_per_region.iteritems():
+    for key, value in POIs_per_region.iteritems():
         # Number
         X[int(key), 2] = value
         # Area
@@ -44,6 +85,11 @@ def fillX(regions_bbox, intersections_per_region, length_per_region,
     # 		for i, v in enumerate(od.values()):
     # 			X[int(key), 4+i] = v
 
+	# Normalization
+	X[:, 0] /= numpy.amax(X[:, 0])
+	X[:, 1] /= numpy.amax(X[:, 1])
+	X[:, 2] /= numpy.amax(X[:, 2])
+	X[:, 3] /= numpy.amax(X[:, 3])
     return X
 
 
@@ -58,10 +104,11 @@ def fillY(taxi_dropoffs_per_region):
     Y = numpy.zeros((regions_count, 24))
 
     for key, value in taxi_dropoffs_per_region:
-        date = datetime.strptime(value[2], '%Y-%m-%d %H:%M:%S')
-        index = round(float(str(date.hour)+','+date(date.minute)))
+        index = roundTime(datetime.strptime(value[2], '%Y-%m-%d %H:%M:%S'), roundTo=60*60).hour
         Y[int(key), int(index)] += 1
 
+	# Normalization
+	Y /= numpy.amax(Y)
     return Y
 
 
@@ -110,11 +157,6 @@ def contextAwareTuckerDecomposition(A, B, C, D, epsilon=0.001, lambda_1=0.0001, 
 	Z = numpy.random.rand(dim_3, dim_X) / 10.0
 	S = numpy.random.rand(dim_X, dim_Y, dim_X) / 10.0
 	U = numpy.random.rand(dim_X, B.shape[1]) / 10.0  # CHECKED
-	X[:] = 0.1
-	Y[:] = 0.2
-	Z[:] = 0.01
-	S[:] = 0.02
-	U[:] = 0.5
 	
 	indices = numpy.nonzero(A)  # 3D array
 	indices = numpy.sort(indices)
@@ -145,11 +187,11 @@ def contextAwareTuckerDecomposition(A, B, C, D, epsilon=0.001, lambda_1=0.0001, 
 		old_S = S
 		
 		# Optimize each element in randomized sequence
-		# for num in range(0, len(values)-1):
-# 			change = num+1 #numpy.random.randint(num+1, len(values))
-# 			temp = turn[num]
-# 			turn[num] = turn[change]
-# 			turn[change] = temp	 # CHECKED
+		for num in range(0, len(values)-1):
+			change = num+1 #numpy.random.randint(num+1, len(values))
+			temp = turn[num]
+			turn[num] = turn[change]
+			turn[change] = temp	 # CHECKED
 		
 		for num in range(0, len(values)):
 			if numpy.isnan(S[1,1,1]): 
@@ -234,9 +276,7 @@ if __name__ == '__main__':
 	T = numpy.tensordot(T, Y, axes=([1,1]))	# R x C x dim_Y
 	T = numpy.tensordot(T, Z, axes=([0,1]))	# R x C x T
 	
-# 	print T.shape
-# 	print T 
-# 	numpy.save(T, 'NoiseInference.np')
+	print T
 
 			
 		

@@ -58,6 +58,19 @@ def calculateEdgesDistance(edges, nodes):
         dict[(nodes[node_1], nodes[node_2])] = haversine(nodes[node_1], nodes[node_2])
 
     return dict
+    
+
+def roundTime(dt=None, roundTo=60):
+   """
+   Round a datetime object to any time laps in seconds
+   :param dt: datetime.datetime object, default now.
+   :param roundTo: closest number of seconds to round to, default 1 minute.
+   :return: the rounded time.
+   """
+   if dt == None : dt = datetime.now()
+   seconds = (dt - dt.min).seconds
+   rounding = (seconds+roundTo/2) // roundTo * roundTo
+   return dt + timedelta(0, rounding-seconds, -dt.microsecond)
 
 
 ###################----------- Base Data -----------###################
@@ -72,7 +85,7 @@ def getRegions():
     data = readJson(url)
     for district in data['features']:
         # (long, lat)
-        dict[district['id']] = district['geometry']
+        dict[district['id']] = shape(district['geometry'])
 
     return dict
 
@@ -143,7 +156,8 @@ def get311NoiseComplaints(date):
     """
     Gets all noise complaints of NY from a staring date.
     :param date: (Y-m-d).
-    :return: dictionary {complaint type : total number of complaints of this type}
+    :return: dictionary {complaint type : total number of complaints of this type} and 
+             dictionary {complaint type : (long/lat, hour, complaint type)}.
     """
     query_string = "http://data.cityofnewyork.us/resource/fhrw-4uyv.json"
     query_string += "?"
@@ -151,8 +165,8 @@ def get311NoiseComplaints(date):
     query_string += "(complaint_type like '%Noise%')"
     query_string += " AND "
     query_string += "(created_date>='" + date + "')"
-    query_string += "&$group=descriptor,latitude,longitude"
-    query_string += "&$select=descriptor,latitude,longitude"
+    query_string += "&$group=descriptor,latitude,longitude,created_date"
+    query_string += "&$select=descriptor,latitude,longitude,created_date"
 
     print query_string
     result = requests.get(query_string).json()
@@ -172,13 +186,18 @@ def get311NoiseComplaints(date):
 
     for record in result:
         for key in complaints:
-            if key.find(record.get('descriptor')) > -1:
-                complaints[key] += 1
-                complaints_loc[key].append((record.get('longitude'), record.get('latitude')))
-                break
-            elif key == "Others":
-                complaints[key] += 1
-                complaints_loc[key].append((record.get('longitude'), record.get('latitude')))
+        	hour = record.get('created_date')
+        	long = record.get('longitude')
+        	lat = record.get('latitude')
+        	if hour is not None and long is not None and lat is not None:
+        		hour = roundTime(datetime.strptime(hour, '%Y-%m-%dT%H:%M:%S.000'), roundTo=60*60).hour
+        		if key.find(record.get('descriptor')) > -1:
+        			complaints[key] += 1
+        			complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
+        			break
+        		elif key == "Others":
+        			complaints[key] += 1
+        			complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
 
     return complaints, complaints_loc
 
@@ -269,7 +288,7 @@ def pointInPolygon(polyDict, points):
     Defines which points are inside which regions.
     :param polyDict: dictionary {region id : polygon}.
     :param points: list of tuples (long, lat).
-    :return: dictionaries {region id : number of points} and {region id : points}
+    :return: dictionaries {region id : number of points} and {region id : points}.
     """
     dict_count = {}
     dict_points = {}
@@ -290,7 +309,7 @@ def pointInPolygon(polyDict, points):
         for j in idx.intersection(point.coords[0]):
             if point.within(polygons[j]):
                 dict_count[j] += 1
-                dict_points[j].append(point)
+                dict_points[j].append(p)
 
     return dict_count, dict_points
 
@@ -339,7 +358,7 @@ def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
 
 def checkinsPerRegion(regions, checkins):
     """
-    Obtain the total of check-ins that falls in a region.
+    Obtain the total number of check-ins that falls in a region.
     :param regions: dictionary {region id : polygon}.
     :param checkins: dictionary {(long, lat) : number of check-ins}.
     :return: dictionary {region id : number of check-ins}.
@@ -350,9 +369,22 @@ def checkinsPerRegion(regions, checkins):
     for key, value in spots_per_region_points.iteritems():
         dict[key] = 0
         for v in value:
-            dict[key] += checkins[v]
-
+        	dict[key] += checkins[v]
+        	
     return dict
+    
+
+def complaintsPerRegion(regions, complaints):
+	"""
+	Obtain the total number of complaints that falls in a reiong, per hour.
+	:param regions: dictionary {region id : polygon}.
+	:param complaints: dictionary {complaint type : (long, lat, hour)}.
+	return: dictionary {region id : (long/lat, hour, complaint type)}
+	"""	
+	values = list(itertools.chain.from_iterable(complaints.values()))
+	complaints_per_region, complaints_per_region_points = pointInPolygon(regions, values)
+
+	return complaints_per_region_points
 
 
 if __name__ == '__main__':
@@ -360,37 +392,42 @@ if __name__ == '__main__':
     date = str(datetime.date(datetime.now()) - timedelta(30 * 6))
     print date
 
-    # # Noise Categories Correlation
-    # print "Getting noise complaints"
-    # complaints, complaints_loc = get311NoiseComplaints(date)
-    #
-    # # Geographical Features
-    # regions_bbox = getRegions()
-    # regions_number = len(regions_bbox)
-    # print "Regions:", regions_number
-    #
-    # print "Reading POIs..."
-    # POIs = getPOIs()
-    # print "POIs:", len(POIs)
-    #
+	# Geographical Features
+    regions_bbox = getRegions()
+    regions_number = len(regions_bbox)
+    print "Regions:", regions_number
+    
+    print "Reading POIs..."
+    POIs = getPOIs()
+    print "POIs:", len(POIs)
+    
     # print "Calculating POIs per Region"
-    # POIs_per_region = POIsPerRegion(regions_bbox, POIs)
-    #
-    # nodes, edges = getRoadsNodesAndEdges()
-    # print "Nodes:", len(nodes)
-    # print "Edges:", len(edges)
-    #
-    # print "Calculating roads intersections and length per Region"
-    # nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
-    # roads_length_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
-    #
-    # # Human Mobility Features
-    # print "Getting Foursquare check-ins"
-    # check_ins = getFoursquareCheckIns()
-    #
-    # print "Calculating check-ins per Region"
-    # check_ins_per_region = checkinsPerRegion(regions_bbox, check_ins)
-
-    print "Getting taxi data"
-    taxi_dropoffs = getTaxiTrips(date)
-    print len(taxi_dropoffs), "taxi trips"
+    POIs_per_region, POIs_per_regions_points = POIsPerRegion(regions_bbox, POIs)
+    
+    nodes, edges = getRoadsNodesAndEdges()
+    print "Nodes:", len(nodes)
+    print "Edges:", len(edges)
+    
+    print "Calculating roads intersections and length per Region"
+    nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
+    roads_length_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
+    
+    # Noise Categories
+    print "Getting noise complaints"
+    complaints, complaints_loc = get311NoiseComplaints(date)
+    complaints_region_hour = complaintsPerRegion(regions_bbox, complaints_loc)
+    
+    # Filling matrices
+    A = tensorDecomposition.fillA(regions_bbox, complaints_region_hour, complaints_loc)
+    B = tensorDecomposition.fillX(regions_bbox, nodes_per_region_number, roads_length_per_region, POIs_per_region)
+       
+    # Human Mobility Features
+#     print "Getting Foursquare check-ins"
+#     check_ins = getFoursquareCheckIns(date)
+#     
+#     print "Calculating check-ins per Region"
+#     check_ins_per_region = checkinsPerRegion(regions_bbox, check_ins)
+# 
+#     print "Getting taxi data"
+#     taxi_dropoffs = getTaxiTrips(date)
+#     print len(taxi_dropoffs), "taxi trips"
