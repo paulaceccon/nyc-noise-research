@@ -8,7 +8,7 @@ Yu Zheng, Tong Liu, Yilun Wang, Yanmin Zhu, Yanchi Liu, and Eric Chang. 2014. Di
    - Open *index.html* on a browser to see the current version.
 - [*in progress*] Noise inference:
    - [x] Optimization method (can be tested running *python tensorDecomposition.py* on any terminal).
-   - [ ] Update road bed data.
+   - [x] Update road bed data.
    - [ ] Properly use Foursquare data.
 
 Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC Prepared](http://data.nycprepared.org).
