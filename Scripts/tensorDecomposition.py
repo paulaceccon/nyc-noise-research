@@ -131,12 +131,16 @@ def fillZ(complaints_loc, dist):
                 loc_2 = complaints_loc[key_2]  # List of tuples corresponding to coordinates for type *j*
                 sum = 0
                 for l1 in loc_1:
-                    count = 0
                     for l2 in loc_2:
-                        if haversine(l1, l2) <= dist:  # Distance between two complaints of types *i* and *j*
-                            count += 1
-                    sum += count
-                Z[index_1, index_2] = sum / float(len(loc_1) * len(loc_2))  # Correlation between category *i* and *j*
+                    	p1 = (l1[0], l1[1])
+                    	p2 = (l2[0], l2[1])
+                        if haversine(p1, p2) <= dist:  # Distance between two complaints of types *i* and *j*
+                            sum += 1
+                mul = float(len(loc_1) * len(loc_2))
+                if mul != 0:
+                	Z[index_1, index_2] = sum / mul  # Correlation between category *i* and *j*
+                else:
+                	Z[index_1, index_2] = 0.0
 
     return Z
     

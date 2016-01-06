@@ -25,7 +25,7 @@ def readJson(url):
     """
     try:
         response = urllib2.urlopen(url)
-        return json.loads(response.read())
+        return json.loads(response.read(), strict=False)
     except urllib2.HTTPError as e:
         return None
 
@@ -113,6 +113,36 @@ def getRoadsNodesAndEdges():
     f.close()
 
     return nodes, edges
+    
+    
+def getRoadsTopology():
+	nodes = []
+	edges = []
+	
+	url = "https://data.cityofnewyork.us/api/geospatial/svwp-sbcd?method=export&format=GeoJSON"
+	data = readJson(url)
+	print "Done reading road bed"
+	print "Processing road bed..."
+
+	v_index = 0;
+# 	roads = 0
+	print len(data['features'])
+	for road in data['features']:
+		n_index = len(nodes)
+# 		roads += 1
+		# (long, lat)
+		coordinates = road['geometry']['coordinates'][0]
+		for i in range(0, len(coordinates)):
+			lat_long = coordinates[i]
+			nodes.append((lat_long[1], lat_long[0]))
+			
+# 		print roads, n_index, len(nodes)-n_index
+# 		print nodes[n_index:len(nodes)]
+		for i in range(n_index, len(nodes)-1):
+# 			print i, i+1
+			edges.append((i, i+1))
+
+	return nodes, edges
 
 
 def getPOIs():
@@ -337,8 +367,8 @@ def roadsNodesPerRegion(regions, nodes):
 def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
     """
     Obtain the total length of road bed per region.
-    :param nodes_per_region_points: dictionary {region id : number of roads nodes}.
-    :param edges: list of edges between nodes as tuples (long, lat).
+    :param nodes_per_region_points: dictionary {region id : list of nodes as tuples (long, lat)}.
+    :param edges: list of edges (index) between nodes.
     :param nodes: list of tuples (long, lat).
     :return: dictionary {region id : total roads length}.
     """
@@ -397,29 +427,32 @@ if __name__ == '__main__':
     regions_number = len(regions_bbox)
     print "Regions:", regions_number
     
-    print "Reading POIs..."
-    POIs = getPOIs()
-    print "POIs:", len(POIs)
+  #   print "Reading POIs..."
+#     POIs = getPOIs()
+#     print "POIs:", len(POIs)
+#     
+#     # print "Calculating POIs per Region"
+#     POIs_per_region, POIs_per_regions_points = POIsPerRegion(regions_bbox, POIs)
     
-    # print "Calculating POIs per Region"
-    POIs_per_region, POIs_per_regions_points = POIsPerRegion(regions_bbox, POIs)
-    
-    nodes, edges = getRoadsNodesAndEdges()
+    nodes, edges = getRoadsTopology() # getRoadsNodesAndEdges()
     print "Nodes:", len(nodes)
     print "Edges:", len(edges)
     
-    print "Calculating roads intersections and length per Region"
+    # print "Calculating roads intersections and length per Region"
     nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
     roads_length_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
-    
-    # Noise Categories
-    print "Getting noise complaints"
-    complaints, complaints_loc = get311NoiseComplaints(date)
-    complaints_region_hour = complaintsPerRegion(regions_bbox, complaints_loc)
-    
-    # Filling matrices
-    A = tensorDecomposition.fillA(regions_bbox, complaints_region_hour, complaints_loc)
-    B = tensorDecomposition.fillX(regions_bbox, nodes_per_region_number, roads_length_per_region, POIs_per_region)
+#     
+#     # Noise Categories
+#     print "Getting noise complaints"
+#     complaints, complaints_loc = get311NoiseComplaints(date)
+#     complaints_region_hour = complaintsPerRegion(regions_bbox, complaints_loc)
+#     
+#     # Filling matrices
+#     A = tensorDecomposition.fillA(regions_bbox, complaints_region_hour, complaints_loc)
+#     B = tensorDecomposition.fillX(regions_bbox, nodes_per_region_number, roads_length_per_region, POIs_per_region)
+#     D = tensorDecomposition.fillZ(complaints_loc, 30)
+#     
+#     print B
        
     # Human Mobility Features
 #     print "Getting Foursquare check-ins"

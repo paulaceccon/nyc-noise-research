@@ -31,6 +31,39 @@ function createMap()
 //---- Map Interaction
 
 // Loads GeoJSON from an external file
+function loadRoadMap()
+{
+	$.ajax({async: false, dataType: "json", url: "https://data.cityofnewyork.us/api/geospatial/svwp-sbcd?method=export&format=GeoJSON", success: function(data)
+	{
+		// Add GeoJSON layer to the map once the file is loaded
+// 		geojson = L.geoJson(data).addTo(map);
+		count = 0;
+		$(data.features).each(function(index, rec) 
+		{
+			if ( rec.hasOwnProperty("geometry") )
+			{
+				coordinates = rec['geometry']['coordinates'][0]
+				for (i = 0; i < coordinates.length; i++)
+				{
+					count++;
+					lat_long = coordinates[i];
+// 					L.circleMarker([lat_long[1], lat_long[0]], marker_style()).addTo(map);
+				}
+			}
+		});
+		console.log(count);
+	}});
+}
+
+// Defines the marker style for each marker
+function marker_style() 
+{
+	return {
+		fillColor: '#f03',
+		radius: 0.2
+	};
+}
+
 function loadNeighborhoods()
 {
 	$.ajax({async: false, dataType: "json", url: "https://nycdatastables.s3.amazonaws.com/2013-08-19T18:22:23.125Z/community-districts-polygon.geojson", success: function(data)
