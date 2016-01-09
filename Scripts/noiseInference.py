@@ -6,6 +6,8 @@ import urllib2, json, csv
 import requests
 import itertools
 import foursquare
+import multiprocessing
+import numpy
 
 from shapely.geometry import shape, Point
 from rtree import index
@@ -28,6 +30,7 @@ def readJson(url):
         return json.loads(response.read(), strict=False)
     except urllib2.HTTPError as e:
         return None
+
 
 
 def readCSV(url):
@@ -113,36 +116,32 @@ def getRoadsNodesAndEdges():
     f.close()
 
     return nodes, edges
-    
-    
+
+
 def getRoadsTopology():
-	nodes = []
-	edges = []
-	
-	url = "https://data.cityofnewyork.us/api/geospatial/svwp-sbcd?method=export&format=GeoJSON"
-	data = readJson(url)
-	print "Done reading road bed"
-	print "Processing road bed..."
+    """
+    Reads the nodes/edges of the NYC roads.
+    :return: a list of nodes, and edges, both as tuples (long, lat).
+    """
+    nodes = []
+    edges = []
 
-	v_index = 0;
-# 	roads = 0
-	print len(data['features'])
-	for road in data['features']:
-		n_index = len(nodes)
-# 		roads += 1
-		# (long, lat)
-		coordinates = road['geometry']['coordinates'][0]
-		for i in range(0, len(coordinates)):
-			lat_long = coordinates[i]
-			nodes.append((lat_long[1], lat_long[0]))
-			
-# 		print roads, n_index, len(nodes)-n_index
-# 		print nodes[n_index:len(nodes)]
-		for i in range(n_index, len(nodes)-1):
-# 			print i, i+1
-			edges.append((i, i+1))
+    with open("../Resources/road.geojson") as data_file:
+        data = json.loads(data_file.read(), strict=False)
+    print "Processing road bed..."
 
-	return nodes, edges
+    for road in data['features']:
+        n_index = len(nodes)
+        # (long, lat)
+        coordinates = road['geometry']['coordinates'][0]
+        for i in range(0, len(coordinates)):
+            lat_long = coordinates[i]
+            nodes.append((lat_long[1], lat_long[0]))
+
+        for i in range(n_index, len(nodes) - 1):
+            edges.append((i, i + 1))
+
+    return nodes, edges
 
 
 def getPOIs():
@@ -216,18 +215,18 @@ def get311NoiseComplaints(date):
 
     for record in result:
         for key in complaints:
-        	hour = record.get('created_date')
-        	long = record.get('longitude')
-        	lat = record.get('latitude')
-        	if hour is not None and long is not None and lat is not None:
-        		hour = roundTime(datetime.strptime(hour, '%Y-%m-%dT%H:%M:%S.000'), roundTo=60*60).hour
-        		if key.find(record.get('descriptor')) > -1:
-        			complaints[key] += 1
-        			complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
-        			break
-        		elif key == "Others":
-        			complaints[key] += 1
-        			complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
+            hour = record.get('created_date')
+            long = record.get('longitude')
+            lat = record.get('latitude')
+            if hour is not None and long is not None and lat is not None:
+                hour = roundTime(datetime.strptime(hour, '%Y-%m-%dT%H:%M:%S.000'), roundTo=60 * 60).hour
+                if key.find(record.get('descriptor')) > -1:
+                    complaints[key] += 1
+                    complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
+                    break
+                elif key == "Others":
+                    complaints[key] += 1
+                    complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
 
     return complaints, complaints_loc
 
@@ -240,8 +239,8 @@ def getFoursquareCheckIns(date):
     """
     client = foursquare.Foursquare(client_id='FUG50WOUTS2FHTCUIVFUUXFFTUGGIC1CITI53KBXPAVDFDV0',
                                    client_secret='2BLM42NTYGLNAA0J3ECOZSHJVJ0ZBC1S32MWBF24JWDN5PIX')
-    checkins = client.venues.explore(params={'near': 'New York, NY', 'afterTimestamp': date})
-
+    checkins = client.venues.explore(params={'near': 'New York, NY', 'afterTimestamp': date, 'time': 'any', 'day': 'any'})
+    
     dict = {}
 
     for checkin in checkins['groups']:
@@ -260,7 +259,7 @@ def getTaxiTrips(date):
     :param date: (Y-m-d).
     :return: list of tuples (long, lat, drop off date).
     """
-    today = date.split('-')
+    today = str(datetime.date(datetime.now())).split('-')
     today_y = today[0]
     today_m = today[1]
 
@@ -268,46 +267,68 @@ def getTaxiTrips(date):
     start_y = start[0]
     start_m = start[1]
 
-    dicts = []
-    for y in range(int(start_y), int(today_y)+1):
-        for m in range(int(start_m), int(today_m)+1):
-            # Month transformation
-            mt = str(m) if m > 9 else '0'+str(m)
+    print start_m+"-"+start_y +" / "+today_m+"-"+today_y
 
-            # Green cabs
-            data = readCSV("https://storage.googleapis.com/tlc-trip-data/" + str(y) +
-                           "/green_tripdata_" + str(y) + "-" + mt + ".csv")
-            if data is not None:
-                dicts.append(data)
-                print "https://storage.googleapis.com/tlc-trip-data/" + str(y) +\
-                      "/green_tripdata_" + str(y) + "-" + mt + ".csv"
+    data = []
+    y = int(start_y)
+    m = int(start_m)
+    while int(start_y) <= int(today_y):
+        # Month transformation
+        if m > 12:
+            m %= 12
+            y += 1
 
-            # Yellow cabs
-            data = readCSV("https://storage.googleapis.com/tlc-trip-data/" + str(y) +
-                           "/yellow_tripdata_" + str(y) + "-" + mt + ".csv")
-            if data is not None:
-                dicts.append(data)
-                print "https://storage.googleapis.com/tlc-trip-data/" + str(y) +\
-                      "/yellow_tripdata_" + str(y) + "-" + mt + ".csv"
+        mt = str(m) if m > 9 else '0' + str(m)
+        # Green cabs
+        if readCSV("https://storage.googleapis.com/tlc-trip-data/" + str(y) + \
+                   "/green_tripdata_" + str(y) + "-" + mt + ".csv") is not None:
+            data.append("https://storage.googleapis.com/tlc-trip-data/" + str(y) + \
+                        "/green_tripdata_" + str(y) + "-" + mt + ".csv")
 
+        # Yellow cabs
+        if readCSV("https://storage.googleapis.com/tlc-trip-data/" + str(y) +
+                    "/yellow_tripdata_" + str(y) + "-" + mt + ".csv") is not None:
+            data.append("https://storage.googleapis.com/tlc-trip-data/" + str(y) +
+                        "/yellow_tripdata_" + str(y) + "-" + mt + ".csv")
+
+        if m == int(today_m):
+            break
+        m += 1
+
+    pool = multiprocessing.Pool(mps-1)
+    result = pool.map(consumeTaxiData, data)
+    pool.close()
+    pool.join()
+
+    return list(itertools.chain(*result))
+
+
+def consumeTaxiData(url):
+    """
+    Given a url, reads its content and process its data.
+    :param url: the url to be readen.
+    :return: a list of tuples in the form (long, lat, hour).
+    """
+    print "Processing", url
     points = []
-    for dict in dicts:
-        for line in dict:
-            latitude = line.get('dropoff_latitude', None)
-            if latitude is None:
-                latitude = line.get('Dropoff_latitude', None)
 
-            longitude = line.get('dropoff_longitude', None)
-            if longitude is None:
-                longitude = line.get('Dropoff_longitude', None)
+    data = readCSV(url)
+    for line in data:
+        latitude = line.get('dropoff_latitude', None)
+        if latitude is None:
+            latitude = line.get('Dropoff_latitude', None)
 
-            time = line.get('tpep_dropoff_datetime', None)
-            if time is None:
-                time = line.get('Lpep_dropoff_datetime', None)
+        longitude = line.get('dropoff_longitude', None)
+        if longitude is None:
+            longitude = line.get('Dropoff_longitude', None)
 
-            if time is not None and latitude is not None and longitude is not None and \
-                            datetime.strptime(time, '%Y-%m-%d %H:%M:%S') >= datetime.strptime(date, '%Y-%m-%d'):
-                points.append((longitude, latitude, time))
+        time = line.get('tpep_dropoff_datetime', None)
+        if time is None:
+            time = line.get('Lpep_dropoff_datetime', None)
+        if time is not None and latitude is not None and longitude is not None and \
+           datetime.strptime(time, '%Y-%m-%d %H:%M:%S') >= datetime.strptime(date, '%Y-%m-%d'):
+            time = roundTime(datetime.strptime(time, '%Y-%m-%d %H:%M:%S'), roundTo=60 * 60).hour
+            points.append((float(longitude), float(latitude), time))
 
     return points
 
@@ -364,6 +385,16 @@ def roadsNodesPerRegion(regions, nodes):
     return pointInPolygon(regions, nodes)
 
 
+def taxiDropoffsPerRegion(regions, taxi_dropoffs):
+    """
+    Defines which dropoffs falls in which regions.
+    :param regions: dictionary {region id : polygon}.
+    :param taxi_dropoffs: list of tuples (long, lat, hour).
+    :return: dictionaries {region id : number of taxi dropoffs} and {region id : taxi dropoffs' coordinates}.
+    """
+    return pointInPolygon(regions, taxi_dropoffs)
+
+
 def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
     """
     Obtain the total length of road bed per region.
@@ -399,68 +430,89 @@ def checkinsPerRegion(regions, checkins):
     for key, value in spots_per_region_points.iteritems():
         dict[key] = 0
         for v in value:
-        	dict[key] += checkins[v]
-        	
+            dict[key] += checkins[v]
+
     return dict
-    
+
 
 def complaintsPerRegion(regions, complaints):
-	"""
-	Obtain the total number of complaints that falls in a reiong, per hour.
-	:param regions: dictionary {region id : polygon}.
-	:param complaints: dictionary {complaint type : (long, lat, hour)}.
-	return: dictionary {region id : (long/lat, hour, complaint type)}
-	"""	
-	values = list(itertools.chain.from_iterable(complaints.values()))
-	complaints_per_region, complaints_per_region_points = pointInPolygon(regions, values)
+    """
+    Obtain the total number of complaints that falls in a reiong, per hour.
+    :param regions: dictionary {region id : polygon}.
+    :param complaints: dictionary {complaint type : (long, lat, hour)}.
+    return: dictionary {region id : (long/lat, hour, complaint type)}
+    """
+    values = list(itertools.chain.from_iterable(complaints.values()))
+    complaints_per_region, complaints_per_region_points = pointInPolygon(regions, values)
 
-	return complaints_per_region_points
+    return complaints_per_region_points
 
 
 if __name__ == '__main__':
-    # Yesterday's date
-    date = str(datetime.date(datetime.now()) - timedelta(30 * 6))
-    print date
+    mps = multiprocessing.cpu_count()
 
-	# Geographical Features
+    # Yesterday's date
+    date = str(datetime.date(datetime.now()) - timedelta(31*7))
+    print "-----> Inital date:", date
+
+    # Geographical Features
     regions_bbox = getRegions()
     regions_number = len(regions_bbox)
-    print "Regions:", regions_number
-    
-  #   print "Reading POIs..."
-#     POIs = getPOIs()
-#     print "POIs:", len(POIs)
-#     
-#     # print "Calculating POIs per Region"
-#     POIs_per_region, POIs_per_regions_points = POIsPerRegion(regions_bbox, POIs)
-    
+    print "-----> Number of regions:", regions_number
+
+    print "Reading POIs..."
+    POIs = getPOIs()
+    print "POIs:", len(POIs)
+
+    # print "Calculating POIs per Region"
+    POIs_per_region, POIs_per_regions_points = POIsPerRegion(regions_bbox, POIs)
+
     nodes, edges = getRoadsTopology() # getRoadsNodesAndEdges()
     print "Nodes:", len(nodes)
     print "Edges:", len(edges)
-    
+
     # print "Calculating roads intersections and length per Region"
     nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
     roads_length_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
-#     
-#     # Noise Categories
-#     print "Getting noise complaints"
-#     complaints, complaints_loc = get311NoiseComplaints(date)
-#     complaints_region_hour = complaintsPerRegion(regions_bbox, complaints_loc)
-#     
-#     # Filling matrices
-#     A = tensorDecomposition.fillA(regions_bbox, complaints_region_hour, complaints_loc)
-#     B = tensorDecomposition.fillX(regions_bbox, nodes_per_region_number, roads_length_per_region, POIs_per_region)
-#     D = tensorDecomposition.fillZ(complaints_loc, 30)
-#     
-#     print B
-       
+
+    # Noise Categories
+    print "-----> Getting noise complaints..."
+    complaints, complaints_loc = get311NoiseComplaints(date)
+    complaints_region_hour = complaintsPerRegion(regions_bbox, complaints_loc)
+
+    print "-----> Getting taxi data..."
+    taxi_dropoffs = getTaxiTrips(date)
+    print len(taxi_dropoffs), "taxi trips"
+    taxi_dropoffs_per_region, taxi_dropoffs_per_region_points = taxiDropoffsPerRegion(regions_bbox, taxi_dropoffs)
+
+    # Filling matrices
+    print "-----> Feelling tensor matrices..."
+    A, max = tensorDecomposition.fillA(regions_bbox, complaints_region_hour, complaints_loc)
+    B = tensorDecomposition.fillX(regions_bbox, nodes_per_region_number, roads_length_per_region, POIs_per_region)
+    C = tensorDecomposition.fillZ(complaints_loc, 30)
+    D = tensorDecomposition.fillY(taxi_dropoffs_per_region_points)
+
+    print "-----> Performing the Tucker context aware decomposition..."
+    X, Y, Z, S = tensorDecomposition.contextAwareTuckerDecomposition(A, B, C, D)
+
+    P = numpy.tensordot(S, X, axes=([0, 1]))  # R x dimX x dimY
+    P = numpy.tensordot(P, Y, axes=([0, 1]))  # R x C x dim_Y
+    P = numpy.tensordot(P, Z, axes=([0, 1]))  # R x C x Y
+
+    print "-----> Saving results..."
+    dim = A.shape
+    print P.shape
+    for z in range(dim[2]):
+        numpy.savetxt("../Results/A"+str(z)+".csv", A[:, :, z], delimiter=",")
+        numpy.savetxt("../Results/P"+str(z)+".csv", P[:, :, z], delimiter=",")
+
+    print max
+    print "-----> Done!"
+
+
     # Human Mobility Features
 #     print "Getting Foursquare check-ins"
 #     check_ins = getFoursquareCheckIns(date)
-#     
+#
 #     print "Calculating check-ins per Region"
 #     check_ins_per_region = checkinsPerRegion(regions_bbox, check_ins)
-# 
-#     print "Getting taxi data"
-#     taxi_dropoffs = getTaxiTrips(date)
-#     print len(taxi_dropoffs), "taxi trips"
