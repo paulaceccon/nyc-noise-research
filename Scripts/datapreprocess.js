@@ -1,6 +1,6 @@
-// Given a json resulting from a 311 data request, constructions an array of dictionaries
+// Given a json resulting from a 311 data request, constructs an array of dictionaries
 // with the following structure: { hour : h, value : v, key : k}
-function complaints_per_hour(data)
+function complaintsPerHour(data)
 {
 	var jsonArr = [];
 	$.each(data, function(index, rec)
@@ -37,7 +37,6 @@ function complaints_per_hour(data)
 			}
 		}
 	}	
-// 	console.log(dict.__array);
 	$.each(jsonArr, function(index, rec)
 	{
 		var key = rec.hour+"|";
@@ -59,42 +58,21 @@ function complaints_per_hour(data)
 		dict[key] = obj;
 		
 	});
-// 	console.log(dict.__array);
 	return dict.__array;
 }
 
 
 // https://www.mapbox.com/mapbox.js/example/v1.0.0/point-in-polygon/
-function complaints_per_region(complaints_data)
+function complaintsPerRegion(complaints_data)
 {	
 	var dict = {};
 	var regions = getNeighborhoods();
-	console.log(regions);
-       //  L.marker([38, -102], {
-//             icon: L.mapbox.marker.icon({
-//                 'marker-color': '#f86767'
-//             }),
-//             draggable: true
-//         }).addTo(map)
-//         .on('dragend', function(e) {
-//             
-//             if (layer.length) {
-//               state.innerHTML = '<strong>' + layer[0].feature.properties.name + '</strong>';
-//             } else {
-//               state.innerHTML = '';
-//             }
-//         });
+
     $.each(complaints_data, function(index, rec)
 	{
 		if ( rec.hasOwnProperty("latitude") && rec.hasOwnProperty("longitude") )
 		{
 			var layer = leafletPip.pointInLayer([rec.longitude , rec.latitude], regions, true);
-// 			console.log(layer);
-			// if (layer.length) {
-//               state.innerHTML = '<strong>' + layer[0].feature.properties.name + '</strong>';
-//             } else {
-//               state.innerHTML = '';
-//             }
 		}
 	});
 }

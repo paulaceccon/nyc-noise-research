@@ -161,7 +161,7 @@ function load311ComplaintsIntoMap(map)
 		}
 
 		// Add layer control using above object
-		layer = L.control.layers(null,overlays).addTo(map);
+		layer = L.control.layers(null,overlays,{position: 'bottomright'}).addTo(map);
 	}});
 }
 
