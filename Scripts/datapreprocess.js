@@ -61,6 +61,37 @@ function complaintsPerHour(data)
 	return dict.__array;
 }
 
+function inferredComplaints(data)
+{	
+	regions_count = 149;
+	complaints_type = 18;
+	time_slots = 24;
+	
+	// regions_count x complaints_type
+	var complaints_per_region = new Array(regions_count);
+	for (i = 0; i < regions_count; i++)
+	{
+		complaints_per_region[i] = new Array(complaints_type);
+		for (j = 0; j < complaints_type; j++)
+		{
+			complaints_per_region[i][j] = 0;
+		}
+	}
+	
+	for (i = 0; i < regions_count; i++)
+	{
+		for (j = 0; j < complaints_type; j++)
+		{
+			for (k = 0; k < time_slots; k++)
+			{
+				complaints_per_region[i][j] += data[i][j][k];
+			}
+		}
+	}
+		
+	return complaints_per_region;
+}
+
 
 // https://www.mapbox.com/mapbox.js/example/v1.0.0/point-in-polygon/
 function complaintsPerRegion(complaints_data)

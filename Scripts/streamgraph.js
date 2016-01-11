@@ -1,6 +1,7 @@
-function streamgraphChart(data, desc_colors) 
+function streamgraphChart(data) 
 {	
-	strokecolor = "#045A8D";
+	var desc_colors = getNoiseDescriptorsColors();
+	var strokecolor = "#045A8D";
 
 	var mapPlotHeight = parseInt(d3.select("#map").style("height"));
 	var mapPlotHeight = parseInt(d3.select("#map").style("height"));

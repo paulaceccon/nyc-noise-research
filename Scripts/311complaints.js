@@ -30,12 +30,12 @@ var descriptors_colors = {'Air Condition/Ventilation Equipment': '#7f3b08',
 						 'Ice Cream Truck': '#abd9e9', 
 						 'Jack Hammering': '#74add1', 
 						 'Lawn Care Equipment': '#4575b4',
-						 'Loud Music/Party': '#4575b4',
+						 'Loud Music/Party': '#393993',
 						 'Loud Talking': '#d8daeb',
 						 'Loud Television': '#b2abd2',
 						 'Manufacturing Noise': '#8073ac',
 						 'Private Carting Noise': '#542788',
-						 'Others': '#000000'};						 
+						 'Others': '#595959'};						 
 
 //---- 311 Query Request
 

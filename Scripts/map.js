@@ -10,7 +10,8 @@ var geojson;
 var info;
 
 // Noise inference data
-var noiseMap = [];
+var noiseMap = {};
+var noiseMapMatrix;
 
 // ---- Map Creation
 
@@ -35,7 +36,7 @@ function createMap()
 //---- Map Interaction
 
 // Loads noise inference results
-function loadNoisePerRegion(files)
+function buildNoiseMatrix(dict)
 {
 	regions_count = 149;
 	complaints_type = 18;
@@ -48,26 +49,50 @@ function loadNoisePerRegion(files)
 		for (j = 0; j < complaints_type; j++)
 		{
 			data[i][j] = new Array(time_slots);
+			for (k = 0; k < time_slots; k++)
+			{
+				data[i][j][k] = 0.0;
+			}
 		}
 	}
 	
-	
+	for (var key in dict)
+	{
+		k = key.split('-')[1].split('.')[0];
+		m = dict[key];
+		for (i = 0; i < regions_count; i++)
+		{
+			for (j = 0; j < complaints_type; j++)
+			{
+				data[i][j][k] += m[i][j] * 85.0;
+			}
+		}
+	}
+	noiseMapMatrix = data;
 }
 
+// Parse the .csv files
 function parseNoiseInferenceFiles(files)
 {
 	$("input[type=file]").parse({
 		config: {
 		complete: function(results, file) {
-						console.log("This file done:", file, results);
-						noiseMap.push(results)
+// 						console.log("This file done:", file['name'], results);
+						noiseMap[file['name']] = results.data;
 				  }
 		},
 		complete: function() {
 			console.log("All files done!");
-			console.log(noiseMap);
+			if (!_.isEmpty(noiseMap))
+				buildNoiseMatrix(noiseMap);
 		}
 	});
+}
+
+// Returns the noise data per region
+function getNoisePerRegion()
+{
+	return noiseMap;
 }
 
 
@@ -128,7 +153,8 @@ function loadNeighborhoods()
 
 	info.update = function (props) {
 		this._div.innerHTML = (props ? '<b> Region ID:'+ props.id +' </b><br />' : 'Hover over a state');
-		if (props) pieChart();
+		if (props && !_.isEmpty(noiseMapMatrix))
+			pieChart(noiseMapMatrix, props.id);
 	};
 
 	info.addTo(map);
@@ -195,7 +221,7 @@ function resetHighlight(e)
 	{
 		layer.bringToBack();
 	}
-	d3.selectAll(".piechart").style("opacity", 0);
+// 	d3.selectAll(".piechart").style("opacity", 0);
 	info.update();
 }
 

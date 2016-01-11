@@ -107,6 +107,7 @@
             <script src="Scripts/streamgraph.js"></script>
             <script src="Scripts/datapreprocess.js"></script>
             <script src="Scripts/piechart.js"></script>
+            <script src="Scripts/d3.legend.js"></script>
 			<!-- ################ --> 
         </body>
     	<script type="text/javascript">
@@ -135,9 +136,8 @@
 					complaintsPerRegion(query_result);
 					
 					// Stream Graph
-					var desc_colors = getNoiseDescriptorsColors();
 					var data = complaintsPerHour(query_result);
-					streamgraphChart(data, desc_colors);
+					streamgraphChart(data);
     			});
     			
     			// Noise Inference
@@ -145,11 +145,9 @@
   				fileInput.addEventListener('change', function(event) 
   				{
     				var input = event.target;
-    				console.log(input.files);
     				if (input.files.length > 0)
     				{
     					parseNoiseInferenceFiles(input.files);
-    					loadNoisePerRegion(input.files);
     				}
   				});
 			});
