@@ -178,7 +178,7 @@ function loadNeighborhoods()
 	};
 
 	info.update = function (props) {
-		this._div.innerHTML = (props && !_.isEmpty(totalNoisePerRegion) ? '<b> Region ID: '+ props.id +' </b><br />' + 'Complaints: ~'+ Math.round(totalNoisePerRegion[props.id]) + '<br />' : 'Hover over a state');
+		this._div.innerHTML = (props && !_.isEmpty(totalNoisePerRegion) ? '<b> Region ID: '+ props.id +' </b><br />' + 'Complaints: ~'+ Math.round(totalNoisePerRegion[props.id]) + '<br />' : 'No data here.');
 		if (props && !_.isEmpty(noiseMapMatrix))
 			pieChart(noiseMapMatrix, props.id);
 	};
