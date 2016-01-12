@@ -11,7 +11,9 @@ var info;
 
 // Noise inference data
 var noiseMap = {};
+var noiseMapMatrix;
 var totalNoisePerRegion;
+var legend;
 
 regions_count = 149;
 complaints_type = 18;
@@ -92,17 +94,19 @@ function countNoisePerRegion()
 // Parse the .csv files
 function parseNoiseInferenceFiles(files)
 {
+	var noise = {}
 	$("input[type=file]").parse({
 		config: {
 		complete: function(results, file) {
 // 						console.log("This file done:", file['name'], results);
-						noiseMap[file['name']] = results.data;
+						noise[file['name']] = results.data;
 				  }
 		},
 		complete: function() {
 			console.log("All files done!");
-			if (!_.isEmpty(noiseMap))
+			if (!_.isEmpty(noise))
 			{
+				noiseMap = noise;
 				buildNoiseMatrix(noiseMap);
 				countNoisePerRegion();
 				fillStyle();
@@ -174,7 +178,7 @@ function loadNeighborhoods()
 	};
 
 	info.update = function (props) {
-		this._div.innerHTML = (props ? '<b> Region ID: '+ props.id +' </b><br /> Complaints: ~'+ Math.round(totalNoisePerRegion[props.id]) + '<br />' : 'Hover over a state');
+		this._div.innerHTML = (props && !_.isEmpty(totalNoisePerRegion) ? '<b> Region ID: '+ props.id +' </b><br />' + 'Complaints: ~'+ Math.round(totalNoisePerRegion[props.id]) + '<br />' : 'Hover over a state');
 		if (props && !_.isEmpty(noiseMapMatrix))
 			pieChart(noiseMapMatrix, props.id);
 	};
@@ -203,7 +207,7 @@ function onEachFeature(feature, layer)
 function style(feature) 
 {
 	return {
-		fillColor: 'white',
+		fillColor: getComplaintsCountColor(feature.id, true),
 		weight: 1,
 		opacity: 1,
 		color: 'white',
@@ -215,37 +219,46 @@ function style(feature)
 function fillStyle()
 {
 	geojson.eachLayer(function (layer) {    
-    	layer.setStyle({fillColor : getComplaintsCountColor(layer.feature.id, true)}) 
+    	layer.setStyle(style(layer.feature)) 
 	});
-	// Legend of the states' color
-	var legend = L.control({position: 'bottomleft'});
 	
-	legend.onAdd = function (map) 
+	// Legend of the states' color
+	if (_.isEmpty(legend))
 	{
-		var div = L.DomUtil.create('div', 'info legend'),
-			grades = [0, 10, 20, 50, 100, 200],
-			labels = [];
+		legend = L.control({position: 'bottomleft'});
+	
+		legend.onAdd = function (map) 
+		{
+			var div = L.DomUtil.create('div', 'info legend'),
+				grades = [0, 10, 20, 50, 100, 200],
+				labels = [];
 
-		for (var i = 0; i < grades.length; i++) {
-			div.innerHTML +=
-				'<div style="background:' + getComplaintsCountColor(grades[i] + 1, false) + '; border-radius: 50%; width: 10px; height: 10px; display:inline-block;"></div> ' +
-				grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-		}
+			for (var i = 0; i < grades.length; i++) {
+				div.innerHTML +=
+					'<div style="background:' + getComplaintsCountColor(grades[i] + 1, false) + '; border-radius: 50%; width: 10px; height: 10px; display:inline-block;"></div> ' +
+					grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+			}
 
-		return div;
-	};
-	legend.addTo(map);
+			return div;
+		};
+		legend.addTo(map);
+	}
 }
 
 function getComplaintsCountColor(d, id) 
 {
 	if (id)
-	{
-		d = totalNoisePerRegion[d]; 	
+	{	
+		if (!_.isEmpty(totalNoisePerRegion))
+			d = totalNoisePerRegion[d]; 
+		else 	
+			return 'white';
 	}
-    return d > 200  ? '#800026' :
-           d > 100  ? '#E31A1C' :
-           d > 50   ? '#FC4E2A' :
+    return d > 400  ? '#800026' :
+           d > 300  ? '#BD0026' :
+           d > 200  ? '#E31A1C' :
+           d > 100  ? '#FC4E2A' :
+           d > 50   ? '#FD8D3C' :
            d > 20   ? '#FEB24C' :
            d > 10   ? '#FED976' :
                       '#FFEDA0';
