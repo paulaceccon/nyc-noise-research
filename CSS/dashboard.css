@@ -71,6 +71,18 @@ body {
 	color: #777;
 }
 
+.info-legend {
+    line-height: 18px;
+    color: #555;
+}
+.info-legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+
 /*
  * Stream Graph
  */
@@ -106,7 +118,7 @@ p {
 	text-align: top;
 }
 
-.legend rect {
+.piechart-legend rect {
  fill: white;
  stroke: black;
  opacity: 0.8; 

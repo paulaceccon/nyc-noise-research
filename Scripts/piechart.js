@@ -53,7 +53,7 @@ function pieChart(wholeData, regionId)
 		.data(pie(data))
 		.enter().append("g")
 		.attr("class", "arc");
-		// .on("mouseover", function (d) {
+// 		.on("mouseover", function (d) {
 // 			d3.select(this)
 // 				.classed("hover", true)
 // 		  		.attr("stroke", strokecolor)
@@ -81,7 +81,7 @@ function pieChart(wholeData, regionId)
 		  .text(function(d) { return d.data.label; });
 		  
 	legend = svg.append("g")
-            .attr("class", "legend")
+            .attr("class", "piechart-legend")
             .attr("transform", "translate(-80,150)")
             .style("font-size", "12px")
             .call(d3.legend)

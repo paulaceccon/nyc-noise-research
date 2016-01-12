@@ -11,7 +11,11 @@ var info;
 
 // Noise inference data
 var noiseMap = {};
-var noiseMapMatrix;
+var totalNoisePerRegion;
+
+regions_count = 149;
+complaints_type = 18;
+time_slots = 24;
 
 // ---- Map Creation
 
@@ -38,10 +42,6 @@ function createMap()
 // Loads noise inference results
 function buildNoiseMatrix(dict)
 {
-	regions_count = 149;
-	complaints_type = 18;
-	time_slots = 24;
-	
 	var data = new Array(regions_count);
 	for (i = 0; i < regions_count; i++)
 	{
@@ -71,6 +71,24 @@ function buildNoiseMatrix(dict)
 	noiseMapMatrix = data;
 }
 
+function countNoisePerRegion()
+{
+	var noisePerRegion = [];
+	for (i = 0; i < regions_count; i++)
+	{
+		var count = 0;
+   		for (j = 0; j < complaints_type; j++)
+    	{   
+        	for (k = 0; k < time_slots; k++)
+        	{
+            	count += noiseMapMatrix[i][j][k];
+        	}
+   	 	}
+   	 	noisePerRegion.push(count);
+   	 }
+   	 totalNoisePerRegion = noisePerRegion;
+}
+
 // Parse the .csv files
 function parseNoiseInferenceFiles(files)
 {
@@ -84,7 +102,11 @@ function parseNoiseInferenceFiles(files)
 		complete: function() {
 			console.log("All files done!");
 			if (!_.isEmpty(noiseMap))
+			{
 				buildNoiseMatrix(noiseMap);
+				countNoisePerRegion();
+				fillStyle();
+			}
 		}
 	});
 }
@@ -129,7 +151,7 @@ function getNoisePerRegion()
 // 	};
 // }
 
-// Loads GeoJSON from an external file
+// Loads GeoJSON community districts from an external file
 function loadNeighborhoods()
 {
 	$.ajax({async: false, dataType: "json", url: "https://nycdatastables.s3.amazonaws.com/2013-08-19T18:22:23.125Z/community-districts-polygon.geojson", success: function(data)
@@ -152,7 +174,7 @@ function loadNeighborhoods()
 	};
 
 	info.update = function (props) {
-		this._div.innerHTML = (props ? '<b> Region ID:'+ props.id +' </b><br />' : 'Hover over a state');
+		this._div.innerHTML = (props ? '<b> Region ID: '+ props.id +' </b><br /> Complaints: ~'+ Math.round(totalNoisePerRegion[props.id]) + '<br />' : 'Hover over a state');
 		if (props && !_.isEmpty(noiseMapMatrix))
 			pieChart(noiseMapMatrix, props.id);
 	};
@@ -181,13 +203,52 @@ function onEachFeature(feature, layer)
 function style(feature) 
 {
 	return {
-		fillColor: '#FFEDA0',
+		fillColor: 'white',
 		weight: 1,
 		opacity: 1,
 		color: 'white',
 		dashArray: '3',
 		fillOpacity: 0.7
 	};
+}
+
+function fillStyle()
+{
+	geojson.eachLayer(function (layer) {    
+    	layer.setStyle({fillColor : getComplaintsCountColor(layer.feature.id, true)}) 
+	});
+	// Legend of the states' color
+	var legend = L.control({position: 'bottomleft'});
+	
+	legend.onAdd = function (map) 
+	{
+		var div = L.DomUtil.create('div', 'info legend'),
+			grades = [0, 10, 20, 50, 100, 200],
+			labels = [];
+
+		for (var i = 0; i < grades.length; i++) {
+			div.innerHTML +=
+				'<div style="background:' + getComplaintsCountColor(grades[i] + 1, false) + '; border-radius: 50%; width: 10px; height: 10px; display:inline-block;"></div> ' +
+				grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+		}
+
+		return div;
+	};
+	legend.addTo(map);
+}
+
+function getComplaintsCountColor(d, id) 
+{
+	if (id)
+	{
+		d = totalNoisePerRegion[d]; 	
+	}
+    return d > 200  ? '#800026' :
+           d > 100  ? '#E31A1C' :
+           d > 50   ? '#FC4E2A' :
+           d > 20   ? '#FEB24C' :
+           d > 10   ? '#FED976' :
+                      '#FFEDA0';
 }
 
 // Defines the behavior of a neighborhood when 
