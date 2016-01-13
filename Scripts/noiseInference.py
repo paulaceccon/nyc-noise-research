@@ -499,6 +499,8 @@ if __name__ == '__main__':
     P = numpy.tensordot(P, Y, axes=([0, 1]))  # R x C x dim_Y
     P = numpy.tensordot(P, Z, axes=([0, 1]))  # R x C x Y
     P = P * max
+    
+    A = A * max
 
     print "-----> Saving results..."
     dim = A.shape

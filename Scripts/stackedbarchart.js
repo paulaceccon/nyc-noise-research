@@ -27,8 +27,9 @@ function stackedbarchart(wholeData, regionId)
     	bottom: 40,
     	left: 60
   	},
+  	legend = 250,
   	width = 500 - margin.left - margin.right,
-  	height = 300 - margin.top - margin.bottom;
+  	height = 600 - margin.top - margin.bottom - legend;
 
 	var color = d3.scale.ordinal()
 	  .range(colorrange);
@@ -72,7 +73,7 @@ function stackedbarchart(wholeData, regionId)
 	  .attr("align","center")
 	  .append("svg")
 	  .attr("width", width)
-	  .attr("height", height);
+	  .attr("height", height + legend);
 
 	var groups = svg.selectAll("g")
 	  .data(data)
@@ -90,7 +91,7 @@ function stackedbarchart(wholeData, regionId)
 	  })
 	  .enter()
 	  .append("rect")
-	  .attr("width", 6)
+	  .attr("width", 8)
 	  .attr("height", function(d) {
 		return -yScale(d.value) + (height - margin.top - margin.bottom);
 	  })
@@ -99,7 +100,8 @@ function stackedbarchart(wholeData, regionId)
 	  })
 	  .attr("y", function(d) {
 		return -(-yScale(d.y0) - yScale(d.value) + (height - margin.top - margin.bottom) * 2);
-	  });
+	  })
+	  .attr("data-legend",function(d) { return d.name; });
 
 	svg.append("g")
 	  .attr("class", "x axis")
@@ -125,4 +127,10 @@ function stackedbarchart(wholeData, regionId)
 	  .attr("y", height - 5)
 	  .attr("text-anchor", "middle")
 	  .text("Hour of day");
+	  
+	legend = svg.append("g")
+    	.attr("class","legend")
+    	.attr("transform","translate("+ margin.left + "," + (height + margin.bottom/2) + ")")
+    	.style("font-size","12px")
+    	.call(d3.legend)
 }

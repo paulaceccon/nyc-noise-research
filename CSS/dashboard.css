@@ -83,6 +83,11 @@ body {
     opacity: 0.7;
 }
 
+.legend rect {
+  fill:white;
+  stroke:black;
+  opacity:0.8;}
+
 /*
  * Stream Graph
  */
