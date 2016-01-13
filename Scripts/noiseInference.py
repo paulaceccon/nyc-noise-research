@@ -498,13 +498,14 @@ if __name__ == '__main__':
     P = numpy.tensordot(S, X, axes=([0, 1]))  # R x dimX x dimY
     P = numpy.tensordot(P, Y, axes=([0, 1]))  # R x C x dim_Y
     P = numpy.tensordot(P, Z, axes=([0, 1]))  # R x C x Y
+    P = P * max
 
     print "-----> Saving results..."
     dim = A.shape
     print P.shape
     for z in range(dim[2]):
-        numpy.savetxt("../Results/A"+str(z)+".csv", A[:, :, z], delimiter=",")
-        numpy.savetxt("../Results/P"+str(z)+".csv", P[:, :, z], delimiter=",")
+        numpy.savetxt("../Results/A-"+str(z)+".csv", A[:, :, z], delimiter=",")
+        numpy.savetxt("../Results/P-"+str(z)+".csv", P[:, :, z], delimiter=",")
 
     print max
     print "-----> Done!"

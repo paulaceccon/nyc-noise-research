@@ -64,11 +64,11 @@ def fillX(regions_bbox, intersections_per_region, length_per_region, POIs_per_re
 
     # Number of road intersections per region
     for key, value in intersections_per_region.iteritems():
-        X[int(key), 0] = value
+        X[int(key), 0] = 0#value
 
     # Total road length per region
     for key, value in length_per_region.iteritems():
-        X[int(key), 1] = value
+        X[int(key), 1] = 0#value
 
     # Number/Density of POIs per region
     for key, value in POIs_per_region.iteritems():

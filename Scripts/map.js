@@ -66,7 +66,7 @@ function buildNoiseMatrix(dict)
 		{
 			for (j = 0; j < complaints_type; j++)
 			{
-				data[i][j][k] += m[i][j] * 85.0;
+				data[i][j][k] += parseFloat(m[i][j]);
 			}
 		}
 	}
@@ -88,6 +88,7 @@ function countNoisePerRegion()
    	 	}
    	 	noisePerRegion.push(count);
    	 }
+   	 
    	 totalNoisePerRegion = noisePerRegion;
 }
 
@@ -180,7 +181,10 @@ function loadNeighborhoods()
 	info.update = function (props) {
 		this._div.innerHTML = (props && !_.isEmpty(totalNoisePerRegion) ? '<b> Region ID: '+ props.id +' </b><br />' + 'Complaints: ~'+ Math.round(totalNoisePerRegion[props.id]) + '<br />' : 'No data here.');
 		if (props && !_.isEmpty(noiseMapMatrix))
+		{
 			pieChart(noiseMapMatrix, props.id);
+			stackedbarchart(noiseMapMatrix, props.id);
+		}
 	};
 
 	info.addTo(map);

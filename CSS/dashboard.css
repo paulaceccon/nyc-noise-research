@@ -102,6 +102,15 @@ p {
   shape-rendering: crispEdges;
 }
 
+.axis text {
+  font-family: sans-serif;
+  font-size: 11px;
+}
+
+.dot {
+  stroke: #000;
+}
+
 /*
  * Pie Chart
  */
@@ -148,3 +157,6 @@ p {
     display: block;
 }
 
+svg {
+  display: block;
+}

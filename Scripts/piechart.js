@@ -6,8 +6,6 @@ function pieChart(wholeData, regionId)
 	
 	var colors = _.values(getNoiseDescriptorsColors());
 	var descriptors = _.keys(getNoiseDescriptorsColors());
-	var complaints_type = 18;
-	var time_slots = 24;
 	for (j = 0; j < complaints_type; j++)
 	{	
 		var count = 0;
@@ -27,8 +25,8 @@ function pieChart(wholeData, regionId)
 	}
 	
 	data = jsonArr;
-	var width = 300,
-   		height = 530,
+	var width = 200,
+   		height = 200,
     	radius = Math.min(width, height) / 2;
 	
 	var color = d3.scale.ordinal()
@@ -47,7 +45,7 @@ function pieChart(wholeData, regionId)
 		.attr("width", width)
 		.attr("height", height)
 	    .append("g")
-		.attr("transform", "translate(" + width / 2 + "," + (height / 2 - 110) + ")");
+		.attr("transform", "translate(" + width / 2 + "," + radius + ")");
 	  
 	var g = svg.selectAll(".arc")
 		.data(pie(data))
@@ -79,15 +77,13 @@ function pieChart(wholeData, regionId)
 		  .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
 		  .attr("dy", ".35em")
 		  .text(function(d) { return d.data.label; });
-	
-	if (count > 0)
-	{  
-		legend = svg.append("g")
-            	.attr("class", "piechart-legend")
-            	.attr("transform", "translate(-70,150)")
-            	.style("font-size", "12px")
-            	.call(d3.legend)
-    }
-
+	// if (count > 0)
+// 	{
+// 		legend = svg.append("g")
+//             	.attr("class", "piechart-legend")
+//             	.attr("transform", "translate(-70,150)")
+//             	.style("font-size", "12px")
+//             .call(d3.legend)
+// 	}
 }
 
