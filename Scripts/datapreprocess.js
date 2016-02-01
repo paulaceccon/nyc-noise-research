@@ -44,7 +44,7 @@ function complaintsPerHour(data)
 		console.log(rec.key);
 		for (var desc in desc_colors) 
 		{
-			if (rec.key.indexOf(desc) > -1) 
+			if (desc.indexOf(rec.key) > -1) 
 			{
 				key += desc;
 				break;

@@ -33,9 +33,9 @@ var descriptors_colors = {'Air Condition/Ventilation Equipment': '#7f3b08',
 						 'Loud Music/Party': '#006600',
 						 'Loud Talking': '#d8daeb',
 						 'Loud Television': '#b2abd2',
-						 'Manufacturing Noise': '#8073ac',						 
-						 'Others': '#595959',
-						 'Private Carting Noise': '#542788'};						 
+						 'Manufacturing Noise': '#8073ac',
+						 'Private Carting Noise': '#542788',						 
+						 'Others': '#595959'};						 
 
 //---- 311 Query Request
 

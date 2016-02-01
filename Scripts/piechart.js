@@ -4,8 +4,8 @@ function pieChart(wholeData, regionId)
 	var jsonArr = [];
 	var colorrange = [];
 	
-	var colors = _.values(getNoiseDescriptorsColors());
-	var descriptors = _.keys(getNoiseDescriptorsColors());
+	var desc_colors = getNoiseDescriptorsColors();
+	var descriptors = Object.keys(desc_colors).sort;
 	for (j = 0; j < complaints_type; j++)
 	{	
 		var count = 0;
@@ -20,7 +20,7 @@ function pieChart(wholeData, regionId)
 					"label": Math.round(count).toString(),
 					"value": count,
 			});
-			colorrange.push(colors[j]);
+			colorrange.push(desc_colors[descriptors[j]]);
 		}
 	}
 	
