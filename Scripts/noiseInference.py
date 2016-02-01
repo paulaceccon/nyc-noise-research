@@ -489,7 +489,7 @@ if __name__ == '__main__':
     print "-----> Feelling tensor matrices..."
     A, max = tensorDecomposition.fillA(regions_bbox, complaints_region_hour, complaints_loc)
     B = tensorDecomposition.fillX(regions_bbox, nodes_per_region_number, roads_length_per_region, POIs_per_region)
-    C = tensorDecomposition.fillZ(complaints_loc, 30)
+    C = tensorDecomposition.fillZ(complaints_loc, 100)
     D = tensorDecomposition.fillY(taxi_dropoffs_per_region_points)
 
     print "-----> Performing the Tucker context aware decomposition..."
@@ -508,6 +508,14 @@ if __name__ == '__main__':
     for z in range(dim[2]):
         numpy.savetxt("../Results/A-"+str(z)+".csv", A[:, :, z], delimiter=",")
         numpy.savetxt("../Results/P-"+str(z)+".csv", P[:, :, z], delimiter=",")
+        
+    numpy.savetxt("../Results/X.csv", X, delimiter=",")
+    numpy.savetxt("../Results/Y.csv", Y, delimiter=",")
+    numpy.savetxt("../Results/Z.csv", Z, delimiter=",")
+
+    numpy.savetxt("../Results/B.csv", B, delimiter=",")
+    numpy.savetxt("../Results/C.csv", C, delimiter=",")
+    numpy.savetxt("../Results/D.csv", D, delimiter=",")
 
     print max
     print "-----> Done!"
