@@ -41,7 +41,6 @@ function complaintsPerHour(data)
 	{
 		var key = rec.hour+"|";
 		// Building key accordingly to pre-defined keys
-		console.log(rec.key);
 		for (var desc in desc_colors) 
 		{
 			if (desc.indexOf(rec.key) > -1) 

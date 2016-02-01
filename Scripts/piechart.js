@@ -5,7 +5,7 @@ function pieChart(wholeData, regionId)
 	var colorrange = [];
 	
 	var desc_colors = getNoiseDescriptorsColors();
-	var descriptors = Object.keys(desc_colors).sort;
+	var descriptors = Object.keys(desc_colors).sort();
 	for (j = 0; j < complaints_type; j++)
 	{	
 		var count = 0;
