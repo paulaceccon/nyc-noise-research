@@ -70,7 +70,7 @@ function pieChart(wholeData, regionId)
 
 	   g.append("path")
 		  .attr("d", arc)
-		  .attr("data-legend", function(d){ return d.data.name; })
+// 		  .attr("data-legend", function(d){ return d.data.name; })
 		  .style("fill", function(d, i) { return color(i); });
 
 	   g.append("text")

@@ -518,6 +518,8 @@ if __name__ == '__main__':
     numpy.savetxt("../Results/D.csv", D, delimiter=",")
 
     print max
+    print numpy.amax(A)
+    print numpy.amax(P)
     print "-----> Done!"
 
 

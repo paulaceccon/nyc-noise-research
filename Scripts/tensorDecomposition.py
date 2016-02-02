@@ -145,7 +145,7 @@ def fillZ(complaints_loc, dist):
 
 
 def contextAwareTuckerDecomposition(A, B, C, D, epsilon=0.001, lambda_1=0.0001, lambda_2=0.0001, lambda_3=0.0001,
-                                    lambda_4=0.0001):
+                                    lambda_4=0.0001, validation=False):
     # Size of core tensor
     dim_X = dim_Y = 10
 
@@ -156,29 +156,39 @@ def contextAwareTuckerDecomposition(A, B, C, D, epsilon=0.001, lambda_1=0.0001, 
     dim_1, dim_2, dim_3 = A.shape  # CHECKED
 
     # Initialize R C T S U with small random values
-    X = numpy.random.rand(dim_1, dim_X) / 10.0
-    Y = numpy.random.rand(dim_2, dim_X) / 10.0
-    Z = numpy.random.rand(dim_3, dim_X) / 10.0
-    S = numpy.random.rand(dim_X, dim_Y, dim_X) / 10.0
-    U = numpy.random.rand(dim_X, B.shape[1]) / 10.0  # CHECKED
+
+    if not validation:
+        X = numpy.random.random((dim_1, dim_X), dtype=numpy.float64) / 10.0
+        Y = numpy.random.random((dim_2, dim_X), dtype=numpy.float64) / 10.0
+        Z = numpy.random.random((dim_3, dim_X), dtype=numpy.float64) / 10.0
+        S = numpy.random.random((dim_X, dim_Y, dim_X), dtype=numpy.float64) / 10.0
+        U = numpy.random.random((dim_X, B.shape[1]), dtype=numpy.float64) / 10.0  # CHECKED
+    else:
+        X = scipy.io.loadmat('../Resources/TensorMat/Xrand.mat', mat_dtype=True)['X']
+        Y = scipy.io.loadmat('../Resources/TensorMat/Yrand.mat', mat_dtype=True)['Y']
+        Z = scipy.io.loadmat('../Resources/TensorMat/Zrand.mat', mat_dtype=True)['Z']
+        S = scipy.io.loadmat('../Resources/TensorMat/Srand.mat', mat_dtype=True)['S'][0, 0]['data']
+        U = scipy.io.loadmat('../Resources/TensorMat/Urand.mat', mat_dtype=True)['U']
+        print X.shape, Y.shape, Z.shape, S.shape, U.shape  # CHECKED
+        print X.dtype, Y.dtype, Z.dtype, S.dtype, U.dtype
 
     indices = numpy.nonzero(A)  # 3D array
-    indices = numpy.sort(indices)
-    print indices.shape
+    indices = numpy.sort(indices)  # CHECKED
     values = A[indices[0], indices[1], indices[2]]  # 1D array  # CHECKED
-    turn = range(0, len(values))
+    turn = range(0, len(values))  # CHECKED
 
     # Initialize function loss
     print values.shape, 'non-zero elements'  # CHECKED
 
-    c = numpy.zeros(values.shape)
+    c = numpy.zeros(values.shape, dtype=numpy.float64)
     for j in range(0, len(values)):
         ijk = numpy.tensordot(S, X[indices[0][j], :].T, axes=([0, 0])).reshape(dim_X, dim_Y)  # dim_X x dim_Y
         ijk = numpy.tensordot(ijk, Y[indices[1][j], :].T, axes=([0, 0]))  # dim_X x 1
         ijk = numpy.tensordot(ijk, Z[indices[2][j], :].T, axes=([0, 0]))  # 1 x 1
         c[j] = ijk.item()
+
     loss_t_1 = numpy.linalg.norm(c - values)
-    loss_t = loss_t_1 + epsilon + 1
+    loss_t = loss_t_1 + epsilon + 1  # CHECKED
     print loss_t_1  # CHECKED
 
     # Get the Laplacian matrices
@@ -203,14 +213,14 @@ def contextAwareTuckerDecomposition(A, B, C, D, epsilon=0.001, lambda_1=0.0001, 
 
             tnum = turn[num]
             n_ita = 1 / math.sqrt(float(t))
-            t = t + 1
+            t += 1
             i = indices[0][tnum]  # CHECKED
             j = indices[1][tnum]  # CHECKED
             k = indices[2][tnum]  # CHECKED
 
-            X_i = X[i, :].reshape(dim_X, 1)  # CHECKED
-            Y_j = Y[j, :].reshape(dim_X, 1)  # CHECKED
-            Z_k = Z[k, :].reshape(dim_X, 1)  # CHECKED
+            X_i = numpy.copy(X[i, :]).reshape(dim_X, 1)  # CHECKED
+            Y_j = numpy.copy(Y[j, :]).reshape(dim_X, 1)  # CHECKED
+            Z_k = numpy.copy(Z[k, :]).reshape(dim_X, 1)  # CHECKED
 
             F_ijk = numpy.tensordot(S, X_i.T, axes=([0, 1])).reshape(dim_X, dim_Y)  # dim_X x dim_Y  #  CHECKED
             F_ijk = numpy.tensordot(F_ijk, Y_j.T, axes=([0, 1]))  # dim_X x 1
@@ -219,42 +229,39 @@ def contextAwareTuckerDecomposition(A, B, C, D, epsilon=0.001, lambda_1=0.0001, 
             Y_ijk = values[tnum]  # CHECKED
             Lfy = F_ijk.item() - Y_ijk  # CHECKED
 
-            XLfy = numpy.tensordot(S, Y_j, axes=([0, 0])).reshape(dim_X, dim_Y)  # dim_X x dim_Y;  #  CHECKED
-            XLfy = numpy.tensordot(XLfy, Z_k, axes=([0, 0]))  # dim_X x 1
+            XLfy = numpy.tensordot(S, Y_j, axes=([2, 0])).reshape(dim_X, dim_Y)  # dim_X x dim_Y;  #  CHECKED
+            XLfy = numpy.tensordot(XLfy, Z_k, axes=([1, 0]))  # dim_X x 1
             XLfy *= (n_ita * Lfy)
 
-            YLfy = numpy.tensordot(S, X_i, axes=([0, 0])).reshape(dim_X, dim_Y)  # dim_X x dim_Y;  #  CHECKED
-            YLfy = numpy.tensordot(YLfy, Z_k, axes=([0, 0]))  # dim_X x 1
+            YLfy = numpy.tensordot(S, Z_k, axes=([2, 0])).reshape(dim_X, dim_Y)  # dim_X x dim_Y;  #  CHECKED
+            YLfy = numpy.tensordot(YLfy, X_i, axes=([0, 0]))  # dim_X x 1
             YLfy *= (n_ita * Lfy)
 
-            ZLfy = numpy.tensordot(S, X_i, axes=([0, 0])).reshape(dim_X, dim_Y)  # dim_X x dim_Y;  #  CHECKED
-            ZLfy = numpy.tensordot(ZLfy, Y_j, axes=([0, 0]))  # dim_X x 1
+            ZLfy = numpy.tensordot(S, Y_j, axes=([1, 0])).reshape(dim_X, dim_Y)  # dim_X x dim_Y;  #  CHECKED
+            ZLfy = numpy.tensordot(ZLfy, X_i, axes=([0, 0]))  # dim_X x 1
             ZLfy *= (n_ita * Lfy)
 
-            SLfy = numpy.tensordot(X_i.reshape(dim_X, 1), Y_j.reshape(dim_X, 1), axes=([1, 1])).reshape(1, dim_X,
-                                                                                                        dim_X)  # 1, dim_X x dim_X  #  CHECKED
-            SLfy = numpy.tensordot(SLfy, Z_k.reshape(dim_X, 1), axes=([0, 1]))  # dim_X x dim_X x dim_X
+            SLfy = numpy.tensordot(X_i, Y_j, axes=[1, 1]).reshape(1, dim_X, dim_X)  # 1, dim_X x dim_X  #  CHECKED
+            SLfy = numpy.tensordot(SLfy, Z_k, axes=[0, 1])
             SLfy *= (n_ita * Lfy)
 
             X[i, :] = ((1 - n_ita * lambda_4) * X_i - XLfy).T - lambda_1 * (
-            n_ita * (numpy.dot((numpy.dot(X_i.T, U) - B[i, :]), U.T))) - lambda_3 * (
-            n_ita * (numpy.dot((numpy.dot(X_i.T, Z.T) - D[i, :]), Z)))  # CHECKED
-            LCY = n_ita * numpy.dot(LC, Y)
-            Y[j, :] = ((1 - n_ita * lambda_4) * Y_j - YLfy).T - lambda_2 * LCY[j, :]
+                n_ita * (numpy.dot((numpy.dot(X_i.T, U) - B[i, :]), U.T))) - lambda_3 * (
+                n_ita * (numpy.dot((numpy.dot(X_i.T, Z.T) - D[i, :]), Z)))            # CHECKED
+            LCY = n_ita * numpy.dot(LC, Y)                                            # CHECKED
+            Y[j, :] = ((1 - n_ita * lambda_4) * Y_j - YLfy).T - lambda_2 * LCY[j, :]  # CHECKED
             Z[k, :] = ((1 - n_ita * lambda_4) * Z_k - ZLfy).T - lambda_3 * (
-            n_ita * numpy.dot((numpy.dot(Z_k.T, X.T) - D[:, k].T), X))
-            S = (1 - n_ita * lambda_4) * S - SLfy
-
+                n_ita * numpy.dot((numpy.dot(Z_k.T, X.T) - D[:, k].T), X))            # CHECKED
+            S = (1 - n_ita * lambda_4) * S - SLfy                                     # CHECKED
             U = U - lambda_1 * n_ita * ((numpy.dot(X_i.T, U) - B[i, :]).T * X_i.T).T - n_ita * lambda_4 * U
 
         # Compute function loss
-        c = numpy.zeros(values.shape)
+        c = numpy.zeros(values.shape, dtype=numpy.float64)
         for j in range(0, len(values)):
-            ijk = numpy.tensordot(S,   X[indices[0][j],:].T, axes=([0,0])).reshape(dim_X, dim_Y) # dim_X x dim_Y
-            ijk = numpy.tensordot(ijk, Y[indices[1][j],:].T, axes=([0,0]))						 # dim_X x 1
-            ijk = numpy.tensordot(ijk, Z[indices[2][j],:].T, axes=([0,0]))						 # 1 x 1
+            ijk = numpy.tensordot(S,   X[indices[0][j], :].T, axes=([0,0])).reshape(dim_X, dim_Y)  # dim_X x dim_Y
+            ijk = numpy.tensordot(ijk, Y[indices[1][j], :].T, axes=([0,0]))						   # dim_X x 1
+            ijk = numpy.tensordot(ijk, Z[indices[2][j], :].T, axes=([0,0]))						   # 1 x 1
             c[j] = ijk.item()
-
         loss_t = loss_t_1
         loss_t_1 = numpy.linalg.norm(c - values)
         print loss_t_1
@@ -268,20 +275,23 @@ def contextAwareTuckerDecomposition(A, B, C, D, epsilon=0.001, lambda_1=0.0001, 
 
 
 if __name__ == '__main__':
-    A = scipy.io.loadmat('../Resources/TensorMat/A_weekend.mat')
-    B = scipy.io.loadmat('../Resources/TensorMat/B.mat')
-    C = scipy.io.loadmat('../Resources/TensorMat/C_weekend.mat')
-    D = scipy.io.loadmat('../Resources/TensorMat/D_weekend.mat')
+    A = scipy.io.loadmat('../Resources/TensorMat/A_weekend.mat', mat_dtype=True)
+    B = scipy.io.loadmat('../Resources/TensorMat/B.mat', mat_dtype=True)
+    C = scipy.io.loadmat('../Resources/TensorMat/C_weekend.mat', mat_dtype=True)
+    D = scipy.io.loadmat('../Resources/TensorMat/D_weekend.mat', mat_dtype=True)
+    m = scipy.io.loadmat('../Resources/TensorMat/MAX_weekend.mat', mat_dtype=True)
 
     A = A['A'][0, 0]['data']
     B = B['B']
     C = C['C']
     D = D['D'].T
+    m = m['MAX'][0, 0]
     print A.shape, B.shape, C.shape, D.shape
 
-    X, Y, Z, S = contextAwareTuckerDecomposition(A, B, C, D)
+    X, Y, Z, S = contextAwareTuckerDecomposition(A, B, C, D, validation=True)
     T = numpy.tensordot(S, X, axes=([0, 1]))  # R x dim_X x dim_Y
     T = numpy.tensordot(T, Y, axes=([1, 1]))  # R x C x dim_Y
     T = numpy.tensordot(T, Z, axes=([0, 1]))  # R x C x T
-
+    T = T * m
+    scipy.io.savemat('T.mat', {'T': T})
     print T
