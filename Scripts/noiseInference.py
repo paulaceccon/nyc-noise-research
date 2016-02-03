@@ -452,7 +452,7 @@ if __name__ == '__main__':
     mps = multiprocessing.cpu_count()
 
     # Yesterday's date
-    date = str(datetime.date(datetime.now()) - timedelta(31*7))
+    date = str(datetime.date(datetime.now()) - timedelta(31*8))
     print "-----> Inital date:", date
 
     # Geographical Features

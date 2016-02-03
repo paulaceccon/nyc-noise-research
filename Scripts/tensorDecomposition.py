@@ -157,13 +157,12 @@ def contextAwareTuckerDecomposition(A, B, C, D, epsilon=0.001, lambda_1=0.0001, 
 
     # Initialize R C T S U with small random values
 
-    if not validation:
-        X = numpy.random.random((dim_1, dim_X), dtype=numpy.float64) / 10.0
-        Y = numpy.random.random((dim_2, dim_X), dtype=numpy.float64) / 10.0
-        Z = numpy.random.random((dim_3, dim_X), dtype=numpy.float64) / 10.0
-        S = numpy.random.random((dim_X, dim_Y, dim_X), dtype=numpy.float64) / 10.0
-        U = numpy.random.random((dim_X, B.shape[1]), dtype=numpy.float64) / 10.0  # CHECKED
-    else:
+    X = numpy.random.random((dim_1, dim_X)) / 10.0
+    Y = numpy.random.random((dim_2, dim_X)) / 10.0
+    Z = numpy.random.random((dim_3, dim_X)) / 10.0
+    S = numpy.random.random((dim_X, dim_Y, dim_X)) / 10.0
+    U = numpy.random.random((dim_X, B.shape[1])) / 10.0  # CHECKED
+    if validation:
         X = scipy.io.loadmat('../Resources/TensorMat/Xrand.mat', mat_dtype=True)['X']
         Y = scipy.io.loadmat('../Resources/TensorMat/Yrand.mat', mat_dtype=True)['Y']
         Z = scipy.io.loadmat('../Resources/TensorMat/Zrand.mat', mat_dtype=True)['Z']
