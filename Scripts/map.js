@@ -73,7 +73,7 @@ function buildNoiseMatrix(dict)
 	noiseMapMatrix = data;
 }
 
-function countNoisePerRegion()
+function countNoisePerRegion(lower_bound, upper_bound)
 {
 	var noisePerRegion = [];
 	for (i = 0; i < regions_count; i++)
@@ -81,7 +81,7 @@ function countNoisePerRegion()
 		var count = 0;
    		for (j = 0; j < complaints_type; j++)
     	{   
-        	for (k = 0; k < time_slots; k++)
+        	for (k = lower_bound; k < upper_bound+1; k++)
         	{
             	count += noiseMapMatrix[i][j][k];
         	}
@@ -109,11 +109,20 @@ function parseNoiseInferenceFiles(files)
 			{
 				noiseMap = noise;
 				buildNoiseMatrix(noiseMap);
-				countNoisePerRegion();
-				fillStyle();
+				refreshData(0, 23);
 			}
 		}
 	});
+}
+
+
+function refreshData(lower_bound, upper_bound)
+{
+	if (!_.isEmpty(noiseMapMatrix))
+	{
+		countNoisePerRegion(lower_bound, upper_bound);
+		fillStyle();
+	}
 }
 
 // Returns the noise data per region
@@ -122,39 +131,6 @@ function getNoisePerRegion()
 	return noiseMap;
 }
 
-
-// Loads GeoJSON from an external file
-// function loadRoadMap()
-// {
-// 	$.ajax({async: false, dataType: "json", url: "https://data.cityofnewyork.us/api/geospatial/svwp-sbcd?method=export&format=GeoJSON", success: function(data)
-// 	{
-// 		// Add GeoJSON layer to the map once the file is loaded
-// 		geojson = L.geoJson(data).addTo(map);
-// 		count = 0;
-// 		$(data.features).each(function(index, rec) 
-// 		{
-// 			if ( rec.hasOwnProperty("geometry") )
-// 			{
-// 				coordinates = rec['geometry']['coordinates'][0]
-// 				for (i = 0; i < coordinates.length; i++)
-// 				{
-// 					count++;
-// 					lat_long = coordinates[i];
-// 					L.circleMarker([lat_long[1], lat_long[0]], roadPointsMarker()).addTo(map);
-// 				}
-// 			}
-// 		});
-// 	}});
-// }
-// 
-// // Defines the marker style for each marker
-// function roadPointsMarker() 
-// {
-// 	return {
-// 		fillColor: '#f03',
-// 		radius: 0.2
-// 	};
-// }
 
 // Loads GeoJSON community districts from an external file
 function loadNeighborhoods()

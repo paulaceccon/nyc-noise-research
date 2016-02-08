@@ -32,7 +32,6 @@ def readJson(url):
         return None
 
 
-
 def readCSV(url):
     """
     Read a csv file.
@@ -219,14 +218,16 @@ def get311NoiseComplaints(date):
             long = record.get('longitude')
             lat = record.get('latitude')
             if hour is not None and long is not None and lat is not None:
-                hour = roundTime(datetime.strptime(hour, '%Y-%m-%dT%H:%M:%S.000'), roundTo=60 * 60).hour
-                if key.find(record.get('descriptor')) > -1:
-                    complaints[key] += 1
-                    complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
-                    break
-                elif key == "Others":
-                    complaints[key] += 1
-                    complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
+                time = roundTime(datetime.strptime(hour, '%Y-%m-%dT%H:%M:%S.000'), roundTo=60 * 60)
+                if time.weekday():
+                    hour = time.hour
+                    if key.find(record.get('descriptor')) > -1:
+                        complaints[key] += 1
+                        complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
+                        break
+                    elif key == "Others":
+                        complaints[key] += 1
+                        complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
 
     return complaints, complaints_loc
 
@@ -267,7 +268,7 @@ def getTaxiTrips(date):
     start_y = start[0]
     start_m = start[1]
 
-    print start_m+"-"+start_y +" / "+today_m+"-"+today_y
+    print start_m + "-" + start_y + " / " + today_m + "-" + today_y
 
     data = []
     y = int(start_y)
@@ -287,7 +288,7 @@ def getTaxiTrips(date):
 
         # Yellow cabs
         if readCSV("https://storage.googleapis.com/tlc-trip-data/" + str(y) +
-                    "/yellow_tripdata_" + str(y) + "-" + mt + ".csv") is not None:
+                   "/yellow_tripdata_" + str(y) + "-" + mt + ".csv") is not None:
             data.append("https://storage.googleapis.com/tlc-trip-data/" + str(y) +
                         "/yellow_tripdata_" + str(y) + "-" + mt + ".csv")
 
@@ -325,10 +326,13 @@ def consumeTaxiData(url):
         time = line.get('tpep_dropoff_datetime', None)
         if time is None:
             time = line.get('Lpep_dropoff_datetime', None)
-        if time is not None and latitude is not None and longitude is not None and \
-           datetime.strptime(time, '%Y-%m-%d %H:%M:%S') >= datetime.strptime(date, '%Y-%m-%d'):
-            time = roundTime(datetime.strptime(time, '%Y-%m-%d %H:%M:%S'), roundTo=60 * 60).hour
-            points.append((float(longitude), float(latitude), time))
+
+        if time is not None:
+            time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+            if latitude is not None and longitude is not None and time >= datetime.strptime(date, '%Y-%m-%d') and \
+                    time.weekday():
+                time = roundTime(time, roundTo=60 * 60).hour
+                points.append((float(longitude), float(latitude), time))
 
     return points
 
@@ -478,6 +482,7 @@ if __name__ == '__main__':
     # Noise Categories
     print "-----> Getting noise complaints..."
     complaints, complaints_loc = get311NoiseComplaints(date)
+    print sum([v for v in complaints.values()]), "complaints"
     complaints_region_hour = complaintsPerRegion(regions_bbox, complaints_loc)
 
     print "-----> Getting taxi data..."

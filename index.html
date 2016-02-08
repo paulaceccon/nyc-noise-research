@@ -7,6 +7,7 @@
         <head>
             <meta charset="utf-8">
             <title>NY Noise Map</title>
+            <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
             <!-- ###DatePicker### -->
 			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.4.5/css/bootstrapValidator.min.css" rel="stylesheet"/>
 			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.min.css" />
@@ -75,6 +76,11 @@
                       	<br></br>
                       	<span class="btn btn-default btn-file">Browse <input id="file-input" type="file" accept="text/comma-separated-values" runat="server" multiple> </span>
                       </div>
+                      <div class="slide">
+                        <label class="control-label">Time range:</label>
+                      	<div id="slider-range"></div> 	
+                      	<span id="time"></span>
+                      </div>
 					</div>
 				  </div>
 				</div>
@@ -84,6 +90,7 @@
 			</div>
 
       		<script src="https://code.jquery.com/jquery-2.1.0.min.js"></script>
+      		<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
       		<script src="PapaParse-4.1.2/papaparse.min.js"></script>
             <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
             <!-- ###DatePicker### -->
@@ -142,15 +149,50 @@
     			});
     			
     			// Noise Inference
-    			var fileInput = document.getElementById('file-input');
+    			loadFiles();
+  				
+  				// Slider
+				$("#slider-range").slider({
+					range: true,
+					min: 0,
+					max: 23,
+					values: [0, 23],
+					step:1,
+					slide: slideTime
+				});
+				$("#slider-range").slider( "option", "disabled", true );
+			});
+			
+			function slideTime(event, ui)
+			{
+    			var val0 = ui.values[0],
+        			val1 = ui.values[1];
+        		var text = "";
+    			if (val0 < 12)
+    				text += val0+"AM - ";
+    			else
+    				text += val0+"PM - ";
+    				
+    			if (val1 < 12)
+    				text += val1+"AM";
+    			else
+    				text += val1+"PM";
+    			$("#time").text(text);
+    			refreshData(parseInt(val0), parseInt(val1));
+			}
+			
+			function loadFiles()
+			{
+				var fileInput = document.getElementById('file-input');
   				fileInput.addEventListener('change', function(event) 
   				{
     				var input = event.target;
     				if (input.files.length > 0)
     				{
     					parseNoiseInferenceFiles(input.files);
+    					$("#slider-range").slider( "option", "disabled", false );
     				}
   				});
-			});
+			}
 		</script>
 </html>
