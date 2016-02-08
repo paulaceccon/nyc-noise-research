@@ -122,7 +122,7 @@ function parseNoiseInferenceFiles(files)
 function refreshData(lower_bound, upper_bound)
 {
 	lower_time = lower_bound;
-	 pper_time = upper_bound;
+	upper_time = upper_bound;
 	if (!_.isEmpty(noiseMapMatrix))
 	{
 		countNoisePerRegion(lower_time, upper_time);
