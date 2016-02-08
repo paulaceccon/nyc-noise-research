@@ -19,6 +19,9 @@ regions_count = 149;
 complaints_type = 18;
 time_slots = 24;
 
+var lower_time = 0;
+var upper_time = 23;
+
 // ---- Map Creation
 
 // Creates a map inside div id="map"
@@ -118,9 +121,11 @@ function parseNoiseInferenceFiles(files)
 
 function refreshData(lower_bound, upper_bound)
 {
+	lower_time = lower_bound;
+	 pper_time = upper_bound;
 	if (!_.isEmpty(noiseMapMatrix))
 	{
-		countNoisePerRegion(lower_bound, upper_bound);
+		countNoisePerRegion(lower_time, upper_time);
 		fillStyle();
 	}
 }
@@ -158,7 +163,7 @@ function loadNeighborhoods()
 		this._div.innerHTML = (props && !_.isEmpty(totalNoisePerRegion) ? '<b> Region ID: '+ props.id +' </b><br />' + 'Complaints: ~'+ Math.round(totalNoisePerRegion[props.id]) + '<br />2015-06-10 / 2015-01-13<br />' : 'No available data.');
 		if (props && !_.isEmpty(noiseMapMatrix))
 		{
-			pieChart(noiseMapMatrix, props.id);
+			pieChart(noiseMapMatrix, props.id, lower_time, upper_time);
 			stackedbarchart(noiseMapMatrix, props.id);
 		}
 	};

@@ -1,4 +1,4 @@
-function pieChart(wholeData, regionId)
+function pieChart(wholeData, regionId, lower_bound, upper_bound)
 {
 	
 	var jsonArr = [];
@@ -9,7 +9,7 @@ function pieChart(wholeData, regionId)
 	for (j = 0; j < complaints_type; j++)
 	{	
 		var count = 0;
-		for (k = 0; k < time_slots; k++)
+		for (k = lower_bound; k < upper_bound+1; k++)
 		{
 			count += wholeData[regionId][j][k];
 		}
