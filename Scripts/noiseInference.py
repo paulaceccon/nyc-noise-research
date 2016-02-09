@@ -135,7 +135,7 @@ def getRoadsTopology():
         coordinates = road['geometry']['coordinates'][0]
         for i in range(0, len(coordinates)):
             lat_long = coordinates[i]
-            nodes.append((lat_long[1], lat_long[0]))
+            nodes.append((lat_long[0], lat_long[1]))
 
         for i in range(n_index, len(nodes) - 1):
             edges.append((i, i + 1))
