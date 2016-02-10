@@ -3,9 +3,9 @@
 
 $(document).ready(function() 
 {
-	$('.dateRangePicker').datepicker({ dateFormat: 'mm/dd/yyyy'}).datepicker("setDate", new Date());
+	//$('.dateRangePicker').datepicker({ dateFormat: 'mm/dd/yyyy'}).datepicker("setDate", new Date());
 	
-	var today = new Date();
+	/*var today = new Date();
 	var dd = today.getDate();
 	var mm = today.getMonth()+1; //January is 0!
 	var yyyy = today.getFullYear();
@@ -16,13 +16,13 @@ $(document).ready(function()
 	if (mm < 10) 
 		mm='0'+mm
 
-	today = mm+'/'+dd+'/'+yyyy;
+	today = mm+'/'+dd+'/'+yyyy;*/
 
     $('.dateRangePicker')
         .datepicker({
             format: 'mm/dd/yyyy',
-            startDate: '01/01/2010',
-            endDate: today
+            startDate: '01/01/2015', //'01/01/2010',
+            endDate: '12/31/2015', //today
         })
         .on('changeDate', function(e) {
             // Revalidate the date field
@@ -45,7 +45,7 @@ $(document).ready(function()
                     },
                     date: {
                         format: 'MM/DD/YYYY',
-                        min: '01/01/2010',
+                        min: '01/01/2015', //'01/01/2010',
                         max: today,
                         message: 'Invalid date'
                     }
