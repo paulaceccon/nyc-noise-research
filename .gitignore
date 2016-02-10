@@ -1,0 +1,9 @@
+#    Custom files    #
+######################
+Resources/tripdata/
+
+# OS generated files #
+######################
+.DS_Store
+Thumbs.db
+.idea
