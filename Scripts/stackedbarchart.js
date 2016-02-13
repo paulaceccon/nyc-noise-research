@@ -2,8 +2,14 @@ function stackedbarchart(wholeData, regionId)
 {
 
 	var jsonArr = [];
-	var colorrange = _.values(getNoiseDescriptorsColors());
-	var descriptors = _.keys(getNoiseDescriptorsColors());
+	var desc_colors = getNoiseDescriptorsColors();
+	var descriptors = _.keys(desc_colors).sort();
+	var colorrange = [];
+	for (j = 0; j < complaints_type; j++)
+	{
+		colorrange.push(desc_colors[descriptors[j]]);
+	}
+	
 	for (j = 0; j < complaints_type; j++)
 	{	
 		complaint = []

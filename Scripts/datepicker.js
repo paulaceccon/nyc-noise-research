@@ -46,7 +46,7 @@ $(document).ready(function()
                     date: {
                         format: 'MM/DD/YYYY',
                         min: '01/01/2015', //'01/01/2010',
-                        max: today,
+                        max: '12/31/2015', //today,
                         message: 'Invalid date'
                     }
                 }
