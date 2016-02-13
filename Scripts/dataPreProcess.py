@@ -1,9 +1,10 @@
 import os
 import glob
 
+import numpy
 import urllib2, json, csv
 import itertools
-import multiprocessing
+from multiprocessing.pool import ThreadPool
 
 from shapely.geometry import shape, Point
 from rtree import index
@@ -97,22 +98,21 @@ def getRoadsTopology():
     return nodes, edges
 
 
-def getTaxiTrips():
+def getTaxiTrips(path):
     """
     Gets the taxi trips occurred in NY in 2015.
     :param date: (Y-m-d).
-    :return: list of tuples (long, lat, drop off date).
+    :return: dict {key: [(long, lat, drop off date)]}.
     """
-    path = '../Resources/tripdata'
-    dict = {}
-
+    taxi_dropoffs_per_region_time = numpy.zeros((149, 24))
     for filename in glob.glob(os.path.join(path, '*.csv')):
         taxi_dropoffs = consumeTaxiData(filename)
         taxi_dropoffs_per_region, taxi_dropoffs_per_region_points = taxiDropoffsPerRegion(regions_bbox, taxi_dropoffs)
-        for key, value in taxi_dropoffs_per_region.iteritems():
-            v = dict.get(key, 0)
-            dict[key] = v + value
-    return dict
+
+        for key, value in taxi_dropoffs_per_region_points.iteritems():
+            for item in value:
+                taxi_dropoffs_per_region_time[int(key), item[2]] += 1
+    return taxi_dropoffs_per_region_time
 
 
 def consumeTaxiData(filename):
@@ -225,23 +225,28 @@ def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
 
 
 if __name__ == '__main__':
-    mps = multiprocessing.cpu_count()
-
     # Geographical Features
     regions_bbox = getRegions()
     regions_number = len(regions_bbox)
     print "-----> Number of regions:", regions_number
 
-    print "-----> Processing road bed..."
-    nodes, edges = getRoadsTopology()
-    print "Nodes:", len(nodes)
-    print "Edges:", len(edges)
+    # print "-----> Processing road bed..."
+    # nodes, edges = getRoadsTopology()
+    # print "Nodes:", len(nodes)
+    # print "Edges:", len(edges)
 
-    nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
-    roads_length_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
-    saveDict(nodes_per_region_number, "NodesPerRegion.csv")
-    saveDict(roads_length_per_region, "RoadLengthPerRegion.csv")
+    # nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
+    # roads_length_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
+    # saveDict(nodes_per_region_number, "NodesPerRegion.csv")
+    # saveDict(roads_length_per_region, "RoadLengthPerRegion.csv")
 
     print "-----> Getting taxi data..."
-    taxi_dropoffs_per_region = getTaxiTrips()
-    saveDict(taxi_dropoffs_per_region, "TaxiDropoffsPerRegion.csv")
+    pool = ThreadPool(2)
+    results = pool.map(getTaxiTrips, ['../Resources/tripdata/green', '../Resources/tripdata/yellow'])
+    pool.close()
+    pool.join()
+
+    a = results[0]
+    b = results[1]
+
+    numpy.savetxt("TaxiDropoffsPerRegion.csv", a+b, fmt='%i', delimiter='\t')

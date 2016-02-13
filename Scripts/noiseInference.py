@@ -1,7 +1,6 @@
 # https://data.cityofnewyork.us/City-Government/road/svwp-sbcd
 # https://data.cityofnewyork.us/api/geospatial/svwp-sbcd?method=export&format=GeoJSON
 # https://data.cityofnewyork.us/api/views/gdww-crzy/rows.json?accessType=DOWNLOAD
-# 28BBYCCUPYHWVFSSSD9Q
 import urllib2, json, csv
 import requests
 import itertools
@@ -43,6 +42,16 @@ def readCSV(url):
         return csv.DictReader(response, delimiter=',')
     except urllib2.HTTPError as e:
         return None
+
+
+def readPreProcessedCSV(filename):
+    dict = {}
+    with open(filename, 'rb') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        for row in spamreader:
+            dict[row[0]] = float(row[1])
+
+    return dict
 
 
 def calculateEdgesDistance(edges, nodes):
@@ -180,10 +189,9 @@ def getPOIs():
     return POIs
 
 
-def get311NoiseComplaints(date):
+def get311NoiseComplaints():
     """
-    Gets all noise complaints of NY from a staring date.
-    :param date: (Y-m-d).
+    Gets all noise complaints of NY in a date range.
     :return: dictionary {complaint type : total number of complaints of this type} and 
              dictionary {complaint type : (long/lat, hour, complaint type)}.
     """
@@ -192,7 +200,9 @@ def get311NoiseComplaints(date):
     query_string += "$where="
     query_string += "(complaint_type like '%Noise%')"
     query_string += " AND "
-    query_string += "(created_date>='" + date + "')"
+    query_string += "(created_date>='" + date_ini + "')"
+    query_string += " AND "
+    query_string += "(created_date<='" + date_end + "')"
     query_string += "&$group=descriptor,latitude,longitude,created_date"
     query_string += "&$select=descriptor,latitude,longitude,created_date"
 
@@ -254,26 +264,25 @@ def getFoursquareCheckIns(date):
     return dict
 
 
-def getTaxiTrips(date):
+def getTaxiTrips():
     """
-    Gets the taxi trips occurred in NY from a starting date.
-    :param date: (Y-m-d).
+    Gets the taxi trips occurred in NY in a date range.
     :return: list of tuples (long, lat, drop off date).
     """
-    today = str(datetime.date(datetime.now())).split('-')
-    today_y = today[0]
-    today_m = today[1]
+    final = date_ini.split('-')
+    final_y = final[0]
+    final_m = final[1]
 
-    start = date.split('-')
+    start = date_end.split('-')
     start_y = start[0]
     start_m = start[1]
 
-    print start_m + "-" + start_y + " / " + today_m + "-" + today_y
+    print start_m + "-" + start_y + " / " + final_m + "-" + final_y
 
     data = []
     y = int(start_y)
     m = int(start_m)
-    while int(start_y) <= int(today_y):
+    while int(start_y) <= int(final_y):
         # Month transformation
         if m > 12:
             m %= 12
@@ -292,7 +301,7 @@ def getTaxiTrips(date):
             data.append("https://storage.googleapis.com/tlc-trip-data/" + str(y) +
                         "/yellow_tripdata_" + str(y) + "-" + mt + ".csv")
 
-        if m == int(today_m):
+        if m == int(final_m):
             break
         m += 1
 
@@ -329,7 +338,8 @@ def consumeTaxiData(url):
 
         if time is not None:
             time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
-            if latitude is not None and longitude is not None and time >= datetime.strptime(date, '%Y-%m-%d') and \
+            if latitude is not None and longitude is not None and \
+                datetime.strptime(date_ini, '%Y-%m-%d') >= time >= datetime.strptime(date_end, '%Y-%m-%d') and \
                     time.weekday():
                 time = roundTime(time, roundTo=60 * 60).hour
                 points.append((float(longitude), float(latitude), time))
@@ -455,43 +465,51 @@ def complaintsPerRegion(regions, complaints):
 if __name__ == '__main__':
     mps = multiprocessing.cpu_count()
 
-    # Yesterday's date
-    date = str(datetime.date(datetime.now()) - timedelta(31*8))
-    print "-----> Inital date:", date
+    # date = str(datetime.date(datetime.now()) - timedelta(31*7))
+    date_ini = str(date(2015, 06, 01))
+    date_end = str(date(2015, 12, 31))
+    print "-----> Date Range:", date_ini, date_end
 
     # Geographical Features
     regions_bbox = getRegions()
     regions_number = len(regions_bbox)
     print "-----> Number of regions:", regions_number
 
-    print "Reading POIs..."
+    print "-----> Reading POIs..."
     POIs = getPOIs()
     print "POIs:", len(POIs)
 
-    # print "Calculating POIs per Region"
+    print "Calculating POIs per Region"
     POIs_per_region, POIs_per_regions_points = POIsPerRegion(regions_bbox, POIs)
 
-    nodes, edges = getRoadsTopology() # getRoadsNodesAndEdges()
-    print "Nodes:", len(nodes)
-    print "Edges:", len(edges)
+    print "-----> Getting road topology..."
+    # nodes, edges = getRoadsTopology()  # getRoadsNodesAndEdges()
+    # print "Nodes:", len(nodes)
+    # print "Edges:", len(edges)
+    nodes_per_region_number = readPreProcessedCSV("../Resources/NodesPerRegion.csv")
+    roads_length_per_region = readPreProcessedCSV("../Resources/RoadLengthPerRegion.csv")
+    print sum([int(v) for v in nodes_per_region_number.values()]), "nodes"
+    print sum([int(v) for v in roads_length_per_region.values()]), "edges"
 
     # print "Calculating roads intersections and length per Region"
-    nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
-    roads_length_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
+    # nodes_per_region_number, nodes_per_region_points = roadsNodesPerRegion(regions_bbox, nodes)
+    # roads_length_per_region = roadsLenghtPerRegion(nodes_per_region_points, edges, nodes)
 
     # Noise Categories
     print "-----> Getting noise complaints..."
-    complaints, complaints_loc = get311NoiseComplaints(date)
+    complaints, complaints_loc = get311NoiseComplaints()
     print sum([v for v in complaints.values()]), "complaints"
     complaints_region_hour = complaintsPerRegion(regions_bbox, complaints_loc)
 
     print "-----> Getting taxi data..."
-    taxi_dropoffs = getTaxiTrips(date)
-    print len(taxi_dropoffs), "taxi trips"
-    taxi_dropoffs_per_region, taxi_dropoffs_per_region_points = taxiDropoffsPerRegion(regions_bbox, taxi_dropoffs)
+    # taxi_dropoffs = getTaxiTrips()
+    # print len(taxi_dropoffs), "taxi trips"
+    # taxi_dropoffs_per_region, taxi_dropoffs_per_region_points = taxiDropoffsPerRegion(regions_bbox, taxi_dropoffs)
+    taxi_dropoffs_per_region_points = readPreProcessedCSV("../Resources/TaxiDropoffsPerRegion.csv")
+    print sum([int(v) for v in taxi_dropoffs_per_region_points.values()]), "taxi trips"
 
     # Filling matrices
-    print "-----> Feelling tensor matrices..."
+    print "-----> Filling tensor matrices..."
     A, max = tensorDecomposition.fillA(regions_bbox, complaints_region_hour, complaints_loc)
     B = tensorDecomposition.fillX(regions_bbox, nodes_per_region_number, roads_length_per_region, POIs_per_region)
     C = tensorDecomposition.fillZ(complaints_loc, 100)
@@ -527,10 +545,9 @@ if __name__ == '__main__':
     print numpy.amax(P)
     print "-----> Done!"
 
-
     # Human Mobility Features
-#     print "Getting Foursquare check-ins"
-#     check_ins = getFoursquareCheckIns(date)
-#
-#     print "Calculating check-ins per Region"
-#     check_ins_per_region = checkinsPerRegion(regions_bbox, check_ins)
+    # print "Getting Foursquare check-ins"
+    # check_ins = getFoursquareCheckIns(date)
+
+    # print "Calculating check-ins per Region"
+    # check_ins_per_region = checkinsPerRegion(regions_bbox, check_ins)

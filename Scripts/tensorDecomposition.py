@@ -100,11 +100,13 @@ def fillY(taxi_dropoffs_per_region):
     """
     regions_count = len(taxi_dropoffs_per_region)
 
-    Y = numpy.zeros((regions_count, 24))
+    # Y = numpy.zeros((regions_count, 24))
 
-    for key, value in taxi_dropoffs_per_region.iteritems():
-        for dropoff in value:
-            Y[int(key), int(dropoff[2])] += 1
+    # for key, value in taxi_dropoffs_per_region.iteritems():
+    #     for dropoff in value:
+    #         Y[int(key), int(dropoff[2])] += 1
+
+    Y = numpy.loadtxt("../Resources/TimedTaxiDropoffsPerRegion.csv", delimiter="\t")
 
     # Normalization
     Y = Y / numpy.amax(Y) if numpy.amax(Y) > 0 else 0
