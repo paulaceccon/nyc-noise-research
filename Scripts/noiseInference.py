@@ -466,7 +466,7 @@ if __name__ == '__main__':
     mps = multiprocessing.cpu_count()
 
     # date = str(datetime.date(datetime.now()) - timedelta(31*7))
-    date_ini = str(date(2015, 06, 01))
+    date_ini = str(date(2015, 01, 01))
     date_end = str(date(2015, 12, 31))
     print "-----> Date Range:", date_ini, date_end
 
