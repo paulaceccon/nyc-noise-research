@@ -1,15 +1,11 @@
 # NYC Noise Inference
 
-Implementation based on :
+Reprodution of the work presented in:
 
 Yu Zheng, Tong Liu, Yilun Wang, Yanmin Zhu, Yanchi Liu, and Eric Chang. 2014. Diagnosing New York city's noises with ubiquitous data. In *Proceedings of the 2014 ACM International Joint Conference on Pervasive and Ubiquitous Computing* (UbiComp '14). ACM, New York, NY, USA, 715-725. DOI=http://dx.doi.org/10.1145/2632048.2632102
 
 - [*on hold*] Map visualization and interation 
    - Open *index.html* on a browser to see the current version.
-- [*in progress*] Noise inference:
-   - [x] Optimization method (can be tested running *python tensorDecomposition.py* on any terminal).
-   - [x] Update road bed data.
-   - [ ] Properly use Foursquare data.
 
 Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC Prepared](http://data.nycprepared.org).
 
@@ -32,9 +28,6 @@ Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC P
     * [Sidewalk Cafes](https://nycdatastables.s3.amazonaws.com/2013-06-05T20:25:17.301Z/operating-sidewalk-cafes-results.csv)
  * Health & Beauty
     * [Health Centers](https://nycdatastables.s3.amazonaws.com/2013-06-04T14:40:48.764Z/community-health-centers-results.csv)
- * Home & Family
-    * [After School Housing](http://data.nycprepared.org/ar/dataset/dycd-after-school-programs-housing/resource/d2306a8f-59d1-4cb0-b527-ba44ca8eec3a)
-    * [Support Programs for Seniors](http://data.nycprepared.org/ar/dataset/dycd-after-school-programs-family-support-programs-for-seniors/resource/493f52a4-0a49-4f5f-8937-78e69fb77852)
  * Profissional & Services
     * [Agencies services](https://nycdatastables.s3.amazonaws.com/2013-07-02T15:29:20.692Z/agency-service-center-results.csv)
  * Shopping
@@ -46,6 +39,7 @@ Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC P
     * [Monuments](https://nycdatastables.s3.amazonaws.com/2013-06-04T17:58:59.335Z/map-of-monuments-results.csv)
     * [Landmarks](https://nycdatastables.s3.amazonaws.com/2013-06-18T20:17:34.010Z/nyc-landmarks-results.csv)
  * [Road bed](https://data.cityofnewyork.us/City-Government/road/svwp-sbcd)
+ * [Road bed+](https://data.cityofnewyork.us/City-Government/NYC-Street-Centerline-CSCL-/exjm-f27b)
  
 3. Human Mobility Features 
   * Collected using [Foursquare API](https://developer.foursquare.com/resources/libraries), specifically, the [*venus/explore*](https://developer.foursquare.com/docs/venues/explore).
