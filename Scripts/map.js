@@ -160,7 +160,7 @@ function loadNeighborhoods()
 	};
 
 	info.update = function (props) {
-		this._div.innerHTML = (props && !_.isEmpty(totalNoisePerRegion) ? '<b> Region ID: '+ props.id +' </b><br />' + 'Complaints: ~'+ Math.round(totalNoisePerRegion[props.id]) + '<br />2015-06-10 / 2015-01-13<br />' : 'No available data.');
+		this._div.innerHTML = (props && !_.isEmpty(totalNoisePerRegion) ? '<b> Region ID: '+ props.id +' </b><br />' + 'Complaints: ~'+ Math.round(totalNoisePerRegion[props.id]) + '<br />2015-01-01 / 2015-12-31<br />' : 'No available data.');
 		if (props && !_.isEmpty(noiseMapMatrix))
 		{
 			pieChart(noiseMapMatrix, props.id, lower_time, upper_time);

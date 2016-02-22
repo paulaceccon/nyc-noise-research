@@ -166,8 +166,6 @@ def getPOIs():
             "https://nycdatastables.s3.amazonaws.com/2013-06-05T14:35:56.387Z/basic-description-of-colleges-and-universities-results.csv",
             "https://nycdatastables.s3.amazonaws.com/2013-06-05T20:25:17.301Z/operating-sidewalk-cafes-results.csv",
             "https://nycdatastables.s3.amazonaws.com/2013-06-04T14:40:48.764Z/community-health-centers-results.csv",
-            "http://data.nycprepared.org/ar/dataset/dycd-after-school-programs-housing/resource/d2306a8f-59d1-4cb0-b527-ba44ca8eec3a",
-            "http://data.nycprepared.org/ar/dataset/dycd-after-school-programs-family-support-programs-for-seniors/resource/493f52a4-0a49-4f5f-8937-78e69fb77852",
             "https://nycdatastables.s3.amazonaws.com/2013-07-02T15:29:20.692Z/agency-service-center-results.csv",
             "https://nycdatastables.s3.amazonaws.com/2013-06-13T18:39:44.536Z/nyc-2012-farmers-market-list-results.csv",
             "https://nycdatastables.s3.amazonaws.com/2013-10-18T21:14:52.348Z/nyc-grocery-stores-final.csv",
@@ -231,7 +229,7 @@ def get311NoiseComplaints():
                 time = roundTime(datetime.strptime(hour, '%Y-%m-%dT%H:%M:%S.000'), roundTo=60 * 60)
                 if time.weekday():
                     hour = time.hour
-                    if key.find(record.get('descriptor')) > -1:
+                    if record.get('descriptor').find(key) > -1:
                         complaints[key] += 1
                         complaints_loc[key].append((float(str(long)), float(str(lat)), hour, key))
                         break
@@ -269,11 +267,11 @@ def getTaxiTrips():
     Gets the taxi trips occurred in NY in a date range.
     :return: list of tuples (long, lat, drop off date).
     """
-    final = date_ini.split('-')
+    final = date_end.split('-')
     final_y = final[0]
     final_m = final[1]
 
-    start = date_end.split('-')
+    start = date_ini.split('-')
     start_y = start[0]
     start_m = start[1]
 
@@ -339,7 +337,7 @@ def consumeTaxiData(url):
         if time is not None:
             time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
             if latitude is not None and longitude is not None and \
-                datetime.strptime(date_ini, '%Y-%m-%d') >= time >= datetime.strptime(date_end, '%Y-%m-%d') and \
+                datetime.strptime(date_end, '%Y-%m-%d') >= time >= datetime.strptime(date_ini, '%Y-%m-%d') and \
                     time.weekday():
                 time = roundTime(time, roundTo=60 * 60).hour
                 points.append((float(longitude), float(latitude), time))
@@ -522,7 +520,7 @@ if __name__ == '__main__':
     P = numpy.tensordot(P, Y, axes=([0, 1]))  # R x C x dim_Y
     P = numpy.tensordot(P, Z, axes=([0, 1]))  # R x C x Y
     P = P * max
-    
+
     A = A * max
 
     print "-----> Saving results..."

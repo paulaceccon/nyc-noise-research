@@ -51,13 +51,11 @@ function complaintsPerHour(data)
 			if (desc == "Others") 
 			{
 				key += desc;
-				break;
 			}
 		}
 		obj = dict[key];
 		obj["value"] += 1;
 		dict[key] = obj;
-		
 	});
 	return dict.__array;
 }
