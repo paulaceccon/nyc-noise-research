@@ -150,6 +150,30 @@ def consumeTaxiData(filename):
     return points
 
 
+def adjacencyMatrix(polyDict):
+    """
+    Defines regions are adjacent to each other.
+    :param polyDict: dictionary {region id : polygon}.
+    :return: 2D numpy array of regions (1, if there is intersection between regions).
+    """
+    regions_adjacency = numpy.zeros((149, 149))
+
+    polygons = []
+    # Populate R-tree index with bounds of polygons
+    idx = index.Index()
+    for p in polyDict.keys():
+        polygon = shape(polyDict[p])
+        idx.insert(int(p), polygon.bounds)
+
+    for p in polyDict.keys():
+        polygon = shape(polyDict[p])
+        neighbors = list(idx.nearest(polygon.bounds))
+        regions_adjacency[int(p), neighbors] = 1
+        print p, neighbors
+
+    return regions_adjacency
+
+
 ###################----------- Data Per Region -----------###################
 def pointInPolygon(polyDict, points):
     """
@@ -240,13 +264,17 @@ if __name__ == '__main__':
     # saveDict(nodes_per_region_number, "NodesPerRegion.csv")
     # saveDict(roads_length_per_region, "RoadLengthPerRegion.csv")
 
-    print "-----> Getting taxi data..."
-    pool = ThreadPool(2)
-    results = pool.map(getTaxiTrips, ['../Resources/tripdata/green', '../Resources/tripdata/yellow'])
-    pool.close()
-    pool.join()
+    # print "-----> Getting taxi data..."
+    # pool = ThreadPool(2)
+    # results = pool.map(getTaxiTrips, ['../Resources/tripdata/green', '../Resources/tripdata/yellow'])
+    # pool.close()
+    # pool.join()
+    #
+    # a = results[0]
+    # b = results[1]
+    #
+    # numpy.savetxt("TaxiDropoffsPerRegion.csv", a+b, fmt='%i', delimiter='\t')
 
-    a = results[0]
-    b = results[1]
-
-    numpy.savetxt("TaxiDropoffsPerRegion.csv", a+b, fmt='%i', delimiter='\t')
+    print "-----> Generating adjacenty matrix"
+    regions_adjacency = adjacencyMatrix(regions_bbox)
+    numpy.savetxt("AdjacencyMatrix.csv", regions_adjacency, fmt='%i', delimiter='\t')
