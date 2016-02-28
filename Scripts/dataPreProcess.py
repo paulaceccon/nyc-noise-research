@@ -53,6 +53,20 @@ def calculateEdgesDistance(edges, nodes):
         dict[(nodes[node_1], nodes[node_2])] = haversine(nodes[node_1], nodes[node_2])
 
     return dict
+    
+
+def parseDate(date):
+	DATE_FORMATS = ['%Y-%m-%d', '%m/%d/%Y %H:%M:%S']
+	for date_format in DATE_FORMATS:
+		try:
+			parsed = datetime.strptime(date, date_format)
+		except ValueError:
+			pass
+		else:
+			break
+	else:
+  		parsed = None
+  	return parsed
 
 
 ###################----------- Base Data -----------###################
@@ -172,6 +186,22 @@ def adjacencyMatrix(polyDict):
         print p, neighbors
 
     return regions_adjacency
+    
+    
+def filterPermits(dateIni, dateEnd):
+    """
+    Filters a .csv permit file.
+    :return: a list of nodes, and edges, both as tuples (long, lat).
+    """
+    with open("../Resources/Multi_Agency_Permits.csv", 'rb') as fin, open("../Resources/Permiters.csv", 'wb') as fout:
+        fieldnames = ['Permit_Issuance_Date', 'Permit_Type_Description', 'Latitude_WGS84', 'Longitude_WGS84']
+        reader = csv.DictReader(fin, delimiter=',')
+    	writer = csv.DictWriter(fout, fieldnames=fieldnames, delimiter=',')
+    	writer.writeheader()
+        for row in reader:
+        	time = parseDate(row['Permit_Issuance_Date'])
+        	if time and dateEnd >= time >= dateIni:
+        		writer.writerow({k: row[k] for k in fieldnames if k in row})
 
 
 ###################----------- Data Per Region -----------###################
@@ -275,6 +305,12 @@ if __name__ == '__main__':
     #
     # numpy.savetxt("TaxiDropoffsPerRegion.csv", a+b, fmt='%i', delimiter='\t')
 
-    print "-----> Generating adjacenty matrix"
-    regions_adjacency = adjacencyMatrix(regions_bbox)
-    numpy.savetxt("AdjacencyMatrix.csv", regions_adjacency, fmt='%i', delimiter='\t')
+    # print "-----> Generating adjacenty matrix..."
+    # regions_adjacency = adjacencyMatrix(regions_bbox)
+    # numpy.savetxt("AdjacencyMatrix.csv", regions_adjacency, fmt='%i', delimiter='\t')
+    
+    print "-----> Filtering permits..."
+    date_ini = datetime(2015, 01, 01)
+    date_end = datetime(2015, 12, 31)
+    filterPermits(date_ini, date_end)
+    
