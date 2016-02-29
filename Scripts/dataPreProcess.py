@@ -20,7 +20,7 @@ def saveDict(dict, output):
     : param output: output file name.
     """
     with open(output, 'wb') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=',')
+        spamwriter = csv.writer(csvfile, delimiter=';')
         for key, value in dict.iteritems():
             spamwriter.writerow([key, value])
 
@@ -56,7 +56,7 @@ def calculateEdgesDistance(edges, nodes):
     
 
 def parseDate(date):
-	DATE_FORMATS = ['%Y-%m-%d', '%m/%d/%Y %H:%M:%S']
+	DATE_FORMATS = ['%Y-%m-%d', '%m/%d/%Y %H:%M:%S', '%m/%d/%Y %I:%M:%S %p']
 	for date_format in DATE_FORMATS:
 		try:
 			parsed = datetime.strptime(date, date_format)
@@ -67,7 +67,14 @@ def parseDate(date):
 	else:
   		parsed = None
   	return parsed
-
+  	
+  	
+def csvToList(filename):
+	with open(filename, 'rb') as f:
+		reader = csv.reader(f)
+		next(reader, None)
+		return list(reader)
+		
 
 ###################----------- Base Data -----------###################
 def getRegions():
@@ -191,17 +198,33 @@ def adjacencyMatrix(polyDict):
 def filterPermits(dateIni, dateEnd):
     """
     Filters a .csv permit file.
-    :return: a list of nodes, and edges, both as tuples (long, lat).
+    :return: a filtered .csv.
     """
     with open("../Resources/Multi_Agency_Permits.csv", 'rb') as fin, open("../Resources/Permiters.csv", 'wb') as fout:
-        fieldnames = ['Permit_Issuance_Date', 'Permit_Type_Description', 'Latitude_WGS84', 'Longitude_WGS84']
+        fieldnames = ['Longitude_WGS84', 'Latitude_WGS84', 'Permit_Issuance_Date', 'Permit_Type_Description']
         reader = csv.DictReader(fin, delimiter=',')
     	writer = csv.DictWriter(fout, fieldnames=fieldnames, delimiter=',')
     	writer.writeheader()
         for row in reader:
         	time = parseDate(row['Permit_Issuance_Date'])
-        	if time and dateEnd >= time >= dateIni:
+        	if time and row['Longitude_WGS84'] and row['Latitude_WGS84'] and dateEnd >= time >= dateIni:
         		writer.writerow({k: row[k] for k in fieldnames if k in row})
+        		
+        		
+def filterComplaints(dateIni, dateEnd):
+    """
+    Filters a .csv 311 complaints file.
+    :return: a filtered .csv.
+    """
+    with open("../Resources/311_Service_Requests_from_2010_to_Present.csv", 'rb') as fin, open("../Resources/Complaints.csv", 'wb') as fout:
+        fieldnames = ['Longitude', 'Latitude', 'Created Date', 'Descriptor']
+        reader = csv.DictReader(fin, delimiter=',')
+    	writer = csv.DictWriter(fout, fieldnames=fieldnames, delimiter=',')
+    	writer.writeheader()
+        for row in reader:
+        	time = parseDate(row['Created Date'])
+        	if time and dateEnd >= time >= dateIni:
+        		writer.writerow({k: row[k] for k in fieldnames if k in row})        		
 
 
 ###################----------- Data Per Region -----------###################
@@ -226,7 +249,10 @@ def pointInPolygon(polyDict, points):
         idx.insert(pos, polygon.bounds)
 
     for i, p in enumerate(points):
-        point = Point(p[0], p[1])
+    	try:
+        	point = Point(float(p[0]), float(p[1]))
+        except:
+        	pass
         # Iterate through spatial index
         for j in idx.intersection(point.coords[0]):
             if point.within(polygons[j]):
@@ -276,6 +302,15 @@ def roadsLenghtPerRegion(nodes_per_region_points, edges, nodes):
                 dict[key] += dist
 
     return dict
+    
+def complaintsPerRegion(regions, complaints):
+    """
+    Defines which road nodes falls in which regions.
+    :param regions: dictionary {region id : polygon}.
+    :param nodes: list of tuples (long, lat).
+    :return: dictionaries {region id : number of road nodes} and {region id : roads nodes' coordinates}.
+    """
+    return pointInPolygon(regions, nodes)
 
 
 if __name__ == '__main__':
@@ -312,5 +347,16 @@ if __name__ == '__main__':
     print "-----> Filtering permits..."
     date_ini = datetime(2015, 01, 01)
     date_end = datetime(2015, 12, 31)
-    filterPermits(date_ini, date_end)
+#     filterPermits(date_ini, date_end)
+#     filterComplaints(date_ini, date_end)
+    
+    permits = csvToList("../Resources/Permiters.csv")
+    complaints = csvToList("../Resources/Complaints.csv")
+    
+    permits_count, permits_points = pointInPolygon(regions_bbox, permits)
+    complaints_count, complaints_points = pointInPolygon(regions_bbox, complaints)
+    
+    saveDict(permits_points, "../Resources/Permiters_Per_Region.csv")
+    saveDict(complaints_points, "../Resources/Complaints_Per_Region.csv")    
+    
     
