@@ -201,7 +201,7 @@ def filterPermits(dateIni, dateEnd):
     :return: a filtered .csv.
     """
     with open("../Resources/Multi_Agency_Permits.csv", 'rb') as fin, open("../Resources/Permiters.csv", 'wb') as fout:
-        fieldnames = ['Longitude_WGS84', 'Latitude_WGS84', 'Permit_Issuance_Date', 'Permit_Type_Description']
+        fieldnames = ['Longitude_WGS84', 'Latitude_WGS84', 'Permit_Issuance_Date', 'Permit_Expiration_Date', 'Permit_Type_Description']
         reader = csv.DictReader(fin, delimiter=',')
     	writer = csv.DictWriter(fout, fieldnames=fieldnames, delimiter=',')
     	writer.writeheader()
@@ -251,13 +251,13 @@ def pointInPolygon(polyDict, points):
     for i, p in enumerate(points):
     	try:
         	point = Point(float(p[0]), float(p[1]))
+        	# Iterate through spatial index
+        	for j in idx.intersection(point.coords[0]):
+        		if point.within(polygons[j]):
+        			dict_count[j] += 1
+        			dict_points[j].append(p)
         except:
         	pass
-        # Iterate through spatial index
-        for j in idx.intersection(point.coords[0]):
-            if point.within(polygons[j]):
-                dict_count[j] += 1
-                dict_points[j].append(p)
 
     return dict_count, dict_points
 
@@ -347,8 +347,8 @@ if __name__ == '__main__':
     print "-----> Filtering permits..."
     date_ini = datetime(2015, 01, 01)
     date_end = datetime(2015, 12, 31)
-#     filterPermits(date_ini, date_end)
-#     filterComplaints(date_ini, date_end)
+    filterPermits(date_ini, date_end)
+    filterComplaints(date_ini, date_end)
     
     permits = csvToList("../Resources/Permiters.csv")
     complaints = csvToList("../Resources/Complaints.csv")
