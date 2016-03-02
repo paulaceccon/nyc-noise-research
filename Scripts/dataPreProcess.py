@@ -201,7 +201,7 @@ def filterPermits(dateIni, dateEnd):
     :return: a filtered .csv.
     """
     with open("../Resources/Multi_Agency_Permits.csv", 'rb') as fin, open("../Resources/Permiters.csv", 'wb') as fout:
-        fieldnames = ['Longitude_WGS84', 'Latitude_WGS84', 'Permit_Issuance_Date', 'Permit_Expiration_Date', 'Permit_Type_Description']
+        fieldnames = ['Longitude_WGS84', 'Latitude_WGS84', 'Permit_Issuance_Date', 'Permit_Type_Description', 'Permit_Expiration_Date']
         reader = csv.DictReader(fin, delimiter=',')
     	writer = csv.DictWriter(fout, fieldnames=fieldnames, delimiter=',')
     	writer.writeheader()
