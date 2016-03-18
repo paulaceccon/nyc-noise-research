@@ -1,25 +1,45 @@
 # NYC Noise Inference
 
-Reprodution of the work presented in:
-
-Yu Zheng, Tong Liu, Yilun Wang, Yanmin Zhu, Yanchi Liu, and Eric Chang. 2014. Diagnosing New York city's noises with ubiquitous data. In *Proceedings of the 2014 ACM International Joint Conference on Pervasive and Ubiquitous Computing* (UbiComp '14). ACM, New York, NY, USA, 715-725. DOI=http://dx.doi.org/10.1145/2632048.2632102
+This repository contains some studies related to the noise pollution of NYC.
 
 #### Project Structure:
 
 ```
 |- NYCNoise
-   |- index.html
-   |- CSS
-   |- Scripts
+   |- ExploringNYCOpenData
+      |- public_html
+         |- index.html
+         |- css
+         |- js
+   |- NoiseInference
+      |- index.html
+      |- CSS
+      |- Scripts
+      |- Results 
    |- Resources
-   |- Results
    |- Analysis
 ```
 
-- **Scripts** contains both scritps to run the inference method (```.py```), as to provide the web visualization tool (```.js```).
 - **Resources** contains collect data necessary regarding different aspects of NYC.
-- **Results** contais all matrices used in the inference method, named as referenced in the paper. Both the original 311 complaints data (```A-*```) as the inferred noise complaints (```P-*```) are there. Here, ```*``` is in the range [0-23], representing the hours of the day. 
 - **Analysis** contains studies performed on the results as on the collected data.
+
+## ExploringNYCOpenData
+
+Simple ```.html``` page to visusalize data from the [311](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9) data set, as well as the [Multi Angecy Permits](https://data.cityofnewyork.us/City-Government/Multi-Agency-Permits/xfyi-uyt5) data set, for the year of 2015. The interface is pretty similar to the one of **Noise Inference** study (presented below).
+
+#### To Visualize the Data:
+
+- Open *index.html* to see the current version (should work on Safari, Chrome and Firefox).
+
+
+## NoiseInference
+
+Reprodution of the work presented in:
+
+Yu Zheng, Tong Liu, Yilun Wang, Yanmin Zhu, Yanchi Liu, and Eric Chang. 2014. Diagnosing New York city's noises with ubiquitous data. In *Proceedings of the 2014 ACM International Joint Conference on Pervasive and Ubiquitous Computing* (UbiComp '14). ACM, New York, NY, USA, 715-725. DOI=http://dx.doi.org/10.1145/2632048.2632102
+
+- **Scripts** contains both scritps to run the inference method (```.py```), as to provide the web visualization tool (```.js```).
+- **Results** contais all matrices used in the inference method, named as referenced in the paper. Both the original 311 complaints data (```A-*```) as the inferred noise complaints (```P-*```) are there. Here, ```*``` is in the range [0-23], representing the hours of the day. 
 
 #### Collected Data:
 
@@ -72,7 +92,7 @@ Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC P
 #### To Visualize the Results:
 
 1. Safari:
-   - Open *index.html* on to see the current version.
+   - Open *index.html* to see the current version.
 2. Others:
    - In progress.
 
@@ -82,11 +102,5 @@ Data collected from [NYC Open Data](https://nycopendata.socrata.com/) and [NYC P
 - Load the inference result files<sup>1</sup> (2) to plot the inferred noise over the map. Colors will represent the number of complaints (9).
 - Change the time range (3) to see how the inferred noise varies during different hours of the day.
 - Hover on a region (5) to show its general information (6) as the inferred complaints (7) -- discretized by categories -- that occurred in the selected time range (3). A bar plot displaying the number complaints discretized by categories and hours of the day will also be shown.
-
-
-#### Extra Resources for Future Works or Investigation:
-- [NYC Sound](https://serv.cusp.nyu.edu/projects/urbansounddataset/)
-- [Road bed+](https://data.cityofnewyork.us/City-Government/NYC-Street-Centerline-CSCL-/exjm-f27b)
-- [Areas of Interest](https://data.cityofnewyork.us/Health/Areas-of-Interest-GIS/mzbd-kucq)
 
 <sup>1</sup> These files should be ```A-*``` (to visualize the original data) or ```P-*```, to visualized the inferred data. 
