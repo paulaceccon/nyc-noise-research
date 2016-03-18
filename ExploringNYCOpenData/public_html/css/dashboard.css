@@ -1,0 +1,140 @@
+/*
+ * Base structure
+ */
+
+html, body, #container {
+    height: 100%;
+    overflow: hidden;
+    padding:0; 
+    margin:0;
+}
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+    padding-top: 50px;            /* height of .navbar, customize with @navbar-height variable */
+}
+
+.navbar {
+    min-height: 50px;
+}
+
+
+/*
+ * Sidebar
+ */
+#sidebar {
+    float: left;
+    height: 100%;
+    max-width: 100%;
+    width: 200px;
+}
+
+.sidebar-wrapper {
+    height: 100%;
+    position: relative;
+    width: 100%;
+}
+
+@media (max-width: 767px) {
+    #sidebar {
+        display: none;
+        z-index: 1000;
+        padding: 20px;
+        overflow-x: hidden;
+        overflow-y: auto;           /* Scrollable contents if viewport is shorter than content. */
+        background-color: #f5f5f5;
+        border-right: 1px solid #eee;
+    }
+}
+
+
+/*
+ * Map
+ */
+#map {
+    height: -moz-calc(100%);      /* Firefox */
+    height: -webkit-calc(100%);   /* Chrome, Safari */
+    height: calc(100%);           /* IE9+ and future browsers */
+    width: auto;
+}
+
+
+/*
+ * Button
+ */
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+
+/*
+ * Text Style
+ */
+.underlined {
+    text-decoration: underline;
+}
+
+
+/*
+ * Bar Chart
+ */
+.axis text {
+    font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.x.axis path {
+    display: none;
+}
+
+
+/*
+ * Polygons' info
+ */
+.info {
+	padding: 6px 8px;
+	font: 14px/16px Arial, Helvetica, sans-serif;
+	background: white;
+	background: rgba(255,255,255,0.8);
+	box-shadow: 0 0 15px rgba(0,0,0,0.2);
+	border-radius: 5px;
+}
+.info h4 {
+	margin: 0 0 5px;
+	color: #777;
+}
+
+.info-legend {
+    line-height: 18px;
+    color: #555;
+}
+.info-legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
