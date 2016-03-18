@@ -25,7 +25,7 @@ This repository contains some studies related to the noise pollution of NYC.
 
 ## ExploringNYCOpenData
 
-Simple ```.html``` page to visusalize data from the [311](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9) data set, as well as the [Multi Angecy Permits](https://data.cityofnewyork.us/City-Government/Multi-Agency-Permits/xfyi-uyt5) data set, for the year of 2015. The interface is pretty similar to the one of **Noise Inference** study (presented below).
+Simple ```.html``` page to visusalize data from the [311](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9) data set, as well as the [Multi Angecy Permits](https://data.cityofnewyork.us/City-Government/Multi-Agency-Permits/xfyi-uyt5) data set, for the year of 2015. The interface is pretty similar to the one of the **Noise Inference** study (presented below).
 
 #### To Visualize the Data:
 
