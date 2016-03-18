@@ -1,0 +1,210 @@
+<!-- http://data.nycprepared.org/dataset/nyc-community-districts/resource/f990d0e5-2917-4902-a50a-1f6a74cc612b -->
+<!-- http://colorbrewer2.org -->
+<!-- http://bl.ocks.org/ragnarheidar/a711faa1a94be4dae48f -->
+
+<!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="utf-8">
+            <title>NY Noise Map</title>
+            <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+			<!-- ### Date Picker ### -->
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.4.5/css/bootstrapValidator.min.css"/>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.min.css" />
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker3.min.css" />
+			<!-- ################## -->
+			<!-- #### Leaflet ##### -->
+			<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+			<!-- ################## -->
+			<!-- #### Bootstrap ### -->
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+			<!-- ################## -->
+			<!-- ##### Custom ##### -->        
+			<link rel="stylesheet" href="CSS/dashboard.css" />
+			<!-- ################## -->
+        </head>
+        <body>
+			<!-- Top bar -->
+			<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			  <div class="container-fluid">
+				<div class="navbar-collapse collapse">
+				  <ul class="nav navbar-nav">
+					<li><a class="navbar-brand" id="311noisemap" href="#">311 Noise Map</a></li>
+                    <li><a class="navbar-brand" id="constructionmap" href="#">Construction Map</a></li>
+				  </ul>
+				</div>
+			  </div>
+			</div>
+			<!-- All Content -->
+			<div id="container">
+			  <!-- Sidebar -->
+			  <div id="sidebar">
+				<div class="sidebar-wrapper">
+				  <div id="features" class="panel panel-default">
+					<div class="panel-heading">
+					  <form id="date" method="post" class="dateRangeForm form-vertical">
+							<!-- Start Date -->
+							<div class="form-group">
+        						<label class="control-label">Start Date:</label>
+        						<br></br>
+								<div class="date">
+            						<div class="input-group input-append date dateRangePicker">
+                						<input type="text" id="startDate" class="form-control" name="date" />
+                						<span class="input-group-addon add-on">
+                							<span class="glyphicon glyphicon-calendar"></span>
+                						</span>
+            						</div>
+        						</div>
+            				</div>
+							<!-- End Date -->
+							<div class="form-group">
+        						<label class="control-label">End Date:</label>
+        						<br></br>
+								<div class="date">
+            						<div class="input-group input-append date dateRangePicker">
+                						<input type="text" id="endDate" class="form-control" name="date" />
+                						<span class="input-group-addon add-on">
+                							<span class="glyphicon glyphicon-calendar"></span>
+                						</span>
+            						</div>
+        						</div>
+            				</div>
+            				<div class="form-group">
+								<button type="button" id="updateData" class="btn btn-default">Update Data</button>
+							</div>
+					  </form>
+					  <hr></hr>
+					  <div class="form-group">
+                      	<label class="control-label">Noise Inference Files:</label>
+                      	<br></br>
+                      	<span class="btn btn-default btn-file">Browse <input id="file-input" type="file" accept="text/comma-separated-values" runat="server" multiple> </span>
+                      </div>
+                      <div class="slide">
+                        <label class="control-label">Time range:</label>
+                      	<div id="slider-range"></div> 	
+                      	<span id="time"></span>
+                      </div>
+					</div>
+				  </div>
+				</div>
+			  </div>
+			  <!-- Main Content -->
+			  <div id="main-content"></div>
+			  <div id="map"></div>
+			  <div id="streamgraph" class="chart"></div>
+			</div>
+			
+			<!-- ### jQuery ## -->
+			<script src="https://code.jquery.com/jquery-2.1.0.min.js"></script>
+			<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+			<!-- ################## -->
+			<!-- ####### d3 ####### -->
+			<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+			<!-- ################## -->
+			<!-- ### Date Picker ## -->
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.4.5/js/bootstrapValidator.min.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.min.js"></script>
+			<!-- ################## -->
+			<!-- #### Leaflet ##### -->
+			<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+			<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-pip/v0.0.2/leaflet-pip.js'></script>
+			<!-- ################## -->
+			<!-- #### Bootstrap ### -->
+			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+			<!-- ################## -->
+			<!-- ### Underscore ### -->
+			<script src="http://underscorejs.org/underscore.js"></script>
+			<!-- ################## -->
+			<!-- ### Papa Parse ### -->
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
+			<!-- ################## -->
+			<!-- ##### Custom ##### -->
+            <script src="Scripts/map.js"></script>
+            <script src="Scripts/311complaints.js"></script>            
+            <script src="Scripts/datepicker.js"></script>
+            <script src="Scripts/streamgraph.js"></script>
+            <script src="Scripts/datapreprocess.js"></script>
+            <script src="Scripts/piechart.js"></script>complaints_type
+            <script src="Scripts/stackedbarchart.js"></script>
+            <script src="Scripts/d3.legend.js"></script>
+			<!-- ################## --> 
+			
+			<script type="text/javascript">
+				// Map creation
+				var map = createMap();
+				loadNeighborhoods();
+			
+				$(document).ready(function() 
+				{
+					// Basic Data
+					$('#updateData').click(function() 
+					{
+						// Complaints Query
+						buildQuery($('#startDate').val(), $('#endDate').val());
+					
+						// Complaints Points
+						load311ComplaintsIntoMap(map);
+
+						var query_result = getQueryResult();
+						if ( query_result.length == 0 ) 
+						{
+							console.log("Empty result for query");
+							return;
+						}
+					
+						complaintsPerRegion(query_result);
+					
+						// Stream Graph
+						var data = complaintsPerHour(query_result);
+						streamgraphChart(data);
+					});
+				
+					// Noise Inference
+					loadFiles();
+				
+					// Slider
+					$("#slider-range").slider({
+						range: true,
+						min: 0,
+						max: 23,
+						values: [0, 23],
+						step:1,
+						slide: slideTime
+					});
+					$("#slider-range").slider("option", "disabled", true);
+				});
+			
+				function slideTime(event, ui)
+				{
+					var val0 = ui.values[0],
+						val1 = ui.values[1];
+					var text = "";
+					if (val0 < 12)
+						text += val0+"AM - ";
+					else
+						text += val0+"PM - ";
+					
+					if (val1 < 12)
+						text += val1+"AM";
+					else
+						text += val1+"PM";
+					$("#time").text(text);
+					refreshData(parseInt(val0), parseInt(val1));
+				}
+			
+				function loadFiles()
+				{
+					var fileInput = document.getElementById('file-input');
+					fileInput.addEventListener('change', function(event) 
+					{
+						var input = event.target;
+						if (input.files.length > 0)
+						{
+							parseNoiseInferenceFiles(input.files);
+							$("#slider-range").slider("option", "disabled", false);
+						}
+					});
+				}
+			</script>
+        </body>
+</html>

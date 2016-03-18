@@ -1,0 +1,167 @@
+/*
+ * Base structure
+ */
+ 
+html, body, #container {
+  height: 100%;
+  overflow: hidden;
+  padding:0; 
+  margin:0;
+}
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  /* height of .navbar, customize with @navbar-height variable */
+  padding-top: 50px;
+}
+
+.navbar {
+  min-height: 50px;
+}
+
+/*
+ * Sidebar
+ */
+ 
+#sidebar {
+  float: left;
+  height: 100%;
+  max-width: 100%;
+  width: 200px;
+}
+
+.sidebar-wrapper {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+#sidebar {
+    display: none;
+    z-index: 1000;
+    padding: 20px;
+    overflow-x: hidden;
+    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+    background-color: #f5f5f5;
+    border-right: 1px solid #eee;
+  }
+}
+
+/*
+ * Map
+ */
+#map {
+  height: -moz-calc(100% - 200px); /* Firefox */
+  height: -webkit-calc(100% - 200px); /* Chrome, Safari */
+  height: calc(100% - 200px); /* IE9+ and future browsers */
+  width: auto;
+}
+
+.info {
+	padding: 6px 8px;
+	font: 14px/16px Arial, Helvetica, sans-serif;
+	background: white;
+	background: rgba(255,255,255,0.8);
+	box-shadow: 0 0 15px rgba(0,0,0,0.2);
+	border-radius: 5px;
+}
+.info h4 {
+	margin: 0 0 5px;
+	color: #777;
+}
+
+.info-legend {
+    line-height: 18px;
+    color: #555;
+}
+.info-legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+
+.legend rect {
+  fill:white;
+  stroke:black;
+  opacity:0.8;}
+
+/*
+ * Stream Graph
+ */
+.chart { 
+  background: #f5f5f5;
+  width: 100%;
+}
+
+p {
+  font: 12px helvetica;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 2px;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font-family: sans-serif;
+  font-size: 11px;
+}
+
+.dot {
+  stroke: #000;
+}
+
+/*
+ * Pie Chart
+ */
+.arc text {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+
+.piechart {
+	text-align: top;
+}
+
+.piechart-legend rect {
+ fill: white;
+ stroke: black;
+ opacity: 0.8; 
+}
+
+/*
+ * Button
+ */
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+svg {
+  display: block;
+}
