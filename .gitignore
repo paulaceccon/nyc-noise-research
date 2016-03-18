@@ -1,13 +1,23 @@
 #    Custom files    #
 ######################
 Resources/tripdata/
+Resources/Multi_Agency_Permits.csv
+Resources/311_Service_Requests_from_2010_to_Present.csv
 
 # OS generated files #
 ######################
 .DS_Store
 Thumbs.db
 .idea
-/HTMLProject/nbproject/private/
-Resources/Multi_Agency_Permits.csv
 
-Resources/311_Service_Requests_from_2010_to_Present.csv
+#     NB project     #
+######################
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+.nb-gradle/
+
+
