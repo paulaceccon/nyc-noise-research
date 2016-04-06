@@ -1,1 +1,1 @@
-road.geojson filter=lfs diff=lfs merge=lfs -text
+road.geojson
