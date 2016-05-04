@@ -57,15 +57,13 @@ def calculateEdgesDistance(edges, nodes):
 
 def parseDate(date):
 	DATE_FORMATS = ['%Y-%m-%d', '%m/%d/%Y %H:%M:%S', '%m/%d/%Y %I:%M:%S %p']
+	parsed = None
 	for date_format in DATE_FORMATS:
 		try:
 			parsed = datetime.strptime(date, date_format)
 		except ValueError:
 			pass
-		else:
-			break
-	else:
-  		parsed = None
+			
   	return parsed
   	
   	
@@ -200,7 +198,8 @@ def filterPermits(dateIni, dateEnd):
     Filters a .csv permit file.
     :return: a filtered .csv.
     """
-    with open("../Resources/Multi_Agency_Permits.csv", 'rb') as fin, open("../Resources/Permiters.csv", 'wb') as fout:
+#     cats = 'ALTERATION', 'PLUMBING', 'EQUIPMENT WORK', 'EQUIPMENT', 'FOUNDATION', 'NEW BUILDING', 'SIGN', 'FULL DEMOLITION'
+    with open("../../Resources/Multi_Agency_Permits.csv", 'rb') as fin, open("../../Resources/Permiters.csv", 'wb') as fout:
         fieldnames = ['Longitude_WGS84', 'Latitude_WGS84', 'Permit_Issuance_Date', 'Permit_Type_Description', 'Permit_Expiration_Date']
         reader = csv.DictReader(fin, delimiter=',')
     	writer = csv.DictWriter(fout, fieldnames=fieldnames, delimiter=',')
@@ -208,7 +207,9 @@ def filterPermits(dateIni, dateEnd):
         for row in reader:
         	time = parseDate(row['Permit_Issuance_Date'])
         	if time and row['Longitude_WGS84'] and row['Latitude_WGS84'] and dateEnd >= time >= dateIni:
-        		writer.writerow({k: row[k] for k in fieldnames if k in row})
+#         		cond  = list(row['Permit_Type_Description'] == cats[i] for i in range(len(cats)))
+#         		if any(cond) == True:
+	        	writer.writerow({k: row[k] for k in fieldnames if k in row})
         		
         		
 def filterComplaints(dateIni, dateEnd):
@@ -345,21 +346,21 @@ if __name__ == '__main__':
     # numpy.savetxt("AdjacencyMatrix.csv", regions_adjacency, fmt='%i', delimiter='\t')
     
     print "-----> Filtering permits..."
-    date_ini = datetime(2015, 01, 01)
+    date_ini = datetime(2013, 01, 01)
     date_end = datetime(2015, 12, 31)
     filterPermits(date_ini, date_end)
-    filterComplaints(date_ini, date_end)
+#     filterComplaints(date_ini, date_end)
     
-    permits = csvToList("../Resources/Permiters.csv")
-    complaints = csvToList("../Resources/Complaints.csv")
-    
-    permits_count, permits_points = pointInPolygon(regions_bbox, permits)
-    complaints_count, complaints_points = pointInPolygon(regions_bbox, complaints)
-    
-    saveDict(permits_points, "../Resources/Permiters_Per_Region-2015.csv")
-    saveDict(complaints_points, "../Resources/Complaints_Per_Region-2015.csv")  
-    
-    saveDict(permits_count, "../Resources/Permiters_Count_Per_Region-2015.csv")
-    saveDict(complaints_count, "../Resources/Complaints_Count_Per_Region-2015.csv")  
+    permits = csvToList("../../Resources/Permiters.csv")
+    # complaints = csvToList("../Resources/Complaints.csv")
+#     
+#     permits_count, permits_points = pointInPolygon(regions_bbox, permits)
+#     complaints_count, complaints_points = pointInPolygon(regions_bbox, complaints)
+#     
+#     saveDict(permits_points, "../Resources/Permiters_Per_Region-2015.csv")
+#     saveDict(complaints_points, "../Resources/Complaints_Per_Region-2015.csv")  
+#     
+#     saveDict(permits_count, "../Resources/Permiters_Count_Per_Region-2015.csv")
+#     saveDict(complaints_count, "../Resources/Complaints_Count_Per_Region-2015.csv")  
     
     
