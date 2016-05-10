@@ -43,7 +43,7 @@ function loadDistricts()
     };
     
     info.update = function (props) {
-        this._div.innerHTML = props ? '<b> Region ID: '+ props.id +'</b><br />' : 'No available data.';
+        this._div.innerHTML = props ? '<b> Region ID: '+ props.properties.communityDistrict +'</b><br />' : 'No available data.';
         if (props)
         {
             barChart('311', props.id);
@@ -52,13 +52,33 @@ function loadDistricts()
     };
 
     info.addTo(map);
+    
+    // The legend for the neighborhoods
+    var legend = L.control({position: 'bottomleft'});
+
+    legend.onAdd = function (map) {
+
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [1, 2, 3, 4, 5],
+            labels = ["Manhattan", "Bronx", "Brooklyn", "Queens", "Staten Island"];
+
+        // Loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < grades.length; i++) {
+            div.innerHTML += '<div style="background:' + getNeighborhood(grades[i] * 100) + '; border-radius: 50%; width: 10px; height: 10px; display:inline-block;"></div> ' +
+                                            grades[i] + (grades[i] ? '&ndash;' + labels[i] + '<br>' : '+');
+        }
+
+        return div;
+    };
+
+    legend.addTo(map);
 }
 
 // Defines the style of the GeoJSON polygons
 function style(feature)
 {
     return {
-//        fillColor: getComplaintsCountColor(feature.id, true),
+        fillColor: getNeighborhood(feature.properties.communityDistrict),
         weight: 2,
         opacity: 1,
         color: 'gray',
@@ -114,4 +134,16 @@ function resetHighlight(e)
 function zoomToFeature(e)
 {
     map.fitBounds(e.target.getBounds());
+}
+
+// Given an id, finds the correspondent neighborhood
+function getNeighborhood(d) 
+{
+    var nb = Math.floor(d / 100);
+    return nb === 1  ? '#011627' :
+           nb === 2  ? '#FDFFFC' :
+           nb === 3  ? '#2EC4B6' :
+           nb === 4  ? '#E71D36' :
+           nb === 5  ? '#FF9F1C' :
+                       '#000000';
 }
