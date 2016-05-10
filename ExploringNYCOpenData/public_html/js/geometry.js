@@ -32,6 +32,5 @@ function pointInPolygon(points, dict)
         
         pip[result[0].feature.id][desc] += 1;
     }   
-//    console.log(pip);
     return pip;
 }
